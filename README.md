@@ -49,3 +49,35 @@
 > ```
 > {"id": УНИКАЛЬНЫЙ_ID_ЗАПРОСА}
 > ```
+> Другие возможные ответы сервера:
+> ```
+> {"error":"Method is not allowed"}
+> ```
+>### /api/v1/calculate GET
+> Возвращает список, принятых запросов
+> Пример запроса:
+> ``` shell
+> curl localhost:8080/api/v1/expressions
+> ```
+> Ответ сервера:
+> ```
+> [{"id":id,"status":"","result":""}, ...]
+> ```
+> Другие возможные ответы сервера:
+> ```
+> {"error":"Method is not allowed"}
+> ```
+>### /api/v1/calculate/{id} GET
+> Возвращает запрос по ID
+> Пример запроса:
+> ``` shell
+> curl localhost:8080/api/v1/expressions/id
+> ```
+> Ответ сервера:
+> ```
+> {"id":id,"status":"","result":""}
+> ```
+> Другие возможные ответы сервера:
+> ```
+> {"error":"Method is not allowed"}
+> ```
