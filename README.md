@@ -4,9 +4,6 @@
   - [**Description**](#description)
   - [**Run Server**](#run-server)
   - [**Endpoints**](#endpoints)
-     - [POST /api/v1/calculate](#post-/api/v1/calculate)
-     - [GET /api/v1/expressions](#get-/api/v1/expressions)
-     - [GET /api/v1/expressions/{id}](#get-/api/v1/expressions/{id})
   - [**Feedback**](#feedback)
 
 # **Description**
