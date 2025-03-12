@@ -23,7 +23,7 @@
 > cd calculator
 > ```
 > ``` shell
-> go run cmd/server/start.go
+> go run cmd/server/main.go
 > ```
 > 
 # **Endpoints**
