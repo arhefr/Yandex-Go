@@ -1,0 +1,73 @@
+package config
+
+import (
+	"calculator/internal/agent/models"
+	router "calculator/internal/orchestrator/transport/http"
+	"time"
+
+	log "github.com/sirupsen/logrus"
+
+	"github.com/joho/godotenv"
+)
+
+type Config struct {
+	RouterConfig router.Config
+	AgentConfig
+}
+
+type AgentConfig struct {
+	Port string
+	Path string
+
+	AgentsValue      int
+	AgentPeriodicity time.Duration
+
+	OperationTime struct {
+		Add time.Duration
+		Sub time.Duration
+		Mul time.Duration
+		Div time.Duration
+	}
+}
+
+func NewConfig() *Config {
+	if err := godotenv.Load("config/enviroment.env"); err != nil {
+		log.Fatal("error missing enviroment file")
+	}
+
+	return &Config{
+		RouterConfig: *NewRouterConfig(),
+		AgentConfig:  *NewAgentConfig(),
+	}
+}
+
+func NewRouterConfig() *router.Config {
+	if err := godotenv.Load("config/enviroment.env"); err != nil {
+		log.Fatal("error missing enviroment file")
+	}
+
+	return &router.Config{
+		Port:     get("PORT", "8080"),
+		PathAdd:  get("PATH_ADD", "/api/v1/calculate"),
+		PathGet:  get("PATH_GET", "/api/v1/expressions"),
+		PathTask: get("PATH_TASK", "/internal/task"),
+	}
+}
+
+func NewAgentConfig() *AgentConfig {
+	if err := godotenv.Load("config/enviroment.env"); err != nil {
+		log.Fatal("error missing enviroment file")
+	}
+
+	return &AgentConfig{
+		Port:             get("PORT", "8080"),
+		Path:             get("PATH_TASK", "/internal/task"),
+		AgentsValue:      getInt("COMPUTING_POWER", "10"),
+		AgentPeriodicity: getTime("AGENT_PERIODICITY_MS", "100"),
+		OperationTime: models.OperationTime{
+			Add: getTime("TIME_ADDITION_MS", "100"),
+			Sub: getTime("TIME_SUBTRACTION_MS", "100"),
+			Mul: getTime("TIME_MULTIPLICATION_MS", "500"),
+			Div: getTime("TIME_DIVISION_MS", "500")},
+	}
+}
