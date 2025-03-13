@@ -5,17 +5,8 @@ import (
 )
 
 type Response struct {
-	ID     int     `json:"id"`
+	ID     string  `json:"id"`
 	Result float64 `json:"result"`
-}
-
-type Config struct {
-	Path string
-
-	AgentsValue      int
-	AgentPeriodicity time.Duration
-
-	OperationTime
 }
 
 type OperationTime struct {

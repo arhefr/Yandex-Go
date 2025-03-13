@@ -59,23 +59,23 @@ func GetNumsOps(expression string) ([]float64, []Operator, error) {
 
 			case "*", "/":
 				if i != len(expression)-1 && sym == "/" && string(expression[i+1]) == "0" {
-					return nil, nil, Err.ErrIncorrectExpr
+					return nil, nil, Err.IncorrectExpr
 				}
 				operators = append(operators, NewOperator(sym, len(operators), priorityOperator(sym)+priority))
 
 			default:
-				return nil, nil, Err.ErrIncorrectExpr
+				return nil, nil, Err.IncorrectExpr
 			}
 		}
 	}
 
 	if len(numbers)-1 != len(operators) || priority != 0 {
-		return nil, nil, Err.ErrIncorrectExpr
+		return nil, nil, Err.IncorrectExpr
 	}
 
 	numbersFloat64, err := tools.SliceTypeToFloat64(numbers)
 	if err != nil {
-		return nil, nil, Err.ErrIncorrectExpr
+		return nil, nil, Err.IncorrectExpr
 	}
 	SortByPriority(operators)
 	return numbersFloat64, operators, nil

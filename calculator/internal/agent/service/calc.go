@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func MakeTask(task models_orchestrator.Task, operation_time models_agent.OperationTime) float64 {
+func MakeTask(task *models_orchestrator.Task, operation_time models_agent.OperationTime) float64 {
 	var res float64
 	n1, n2 := task.Operand1, task.Operand2
 

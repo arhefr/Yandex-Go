@@ -2,7 +2,8 @@ package config
 
 import (
 	"calculator/internal/agent/models"
-	router "calculator/internal/transport/http"
+	router "calculator/internal/orchestrator/transport/http"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -11,7 +12,22 @@ import (
 
 type Config struct {
 	RouterConfig router.Config
-	AgentConfig  models.Config
+	AgentConfig
+}
+
+type AgentConfig struct {
+	Port string
+	Path string
+
+	AgentsValue      int
+	AgentPeriodicity time.Duration
+
+	OperationTime struct {
+		Add time.Duration
+		Sub time.Duration
+		Mul time.Duration
+		Div time.Duration
+	}
 }
 
 func NewConfig() *Config {
@@ -20,21 +36,38 @@ func NewConfig() *Config {
 	}
 
 	return &Config{
-		RouterConfig: router.Config{
-			Port:     getEnv("PORT", "8080"),
-			PathAdd:  getEnv("PATH_ADD", "/api/v1/calculate"),
-			PathGet:  getEnv("PATH_GET", "/api/v1/expressions"),
-			PathTask: getEnv("PATH_TASK", "/internal/task"),
-		},
-		AgentConfig: models.Config{
-			Path:             getEnv("PATH_TASK", "/internal/task"),
-			AgentsValue:      getEnvInt("COMPUTING_POWER", "10"),
-			AgentPeriodicity: getEnvTime("AGENT_PERIODICITY_MS", "100"),
-			OperationTime: models.OperationTime{
-				Add: getEnvTime("TIME_ADDITION_MS", "100"),
-				Sub: getEnvTime("TIME_SUBTRACTION_MS", "100"),
-				Mul: getEnvTime("TIME_MULTIPLICATION_MS", "500"),
-				Div: getEnvTime("TIME_DIVISION_MS", "500")},
-		},
+		RouterConfig: *NewRouterConfig(),
+		AgentConfig:  *NewAgentConfig(),
+	}
+}
+
+func NewRouterConfig() *router.Config {
+	if err := godotenv.Load("config/enviroment.env"); err != nil {
+		log.Fatal("error missing enviroment file")
+	}
+
+	return &router.Config{
+		Port:     get("PORT", "8080"),
+		PathAdd:  get("PATH_ADD", "/api/v1/calculate"),
+		PathGet:  get("PATH_GET", "/api/v1/expressions"),
+		PathTask: get("PATH_TASK", "/internal/task"),
+	}
+}
+
+func NewAgentConfig() *AgentConfig {
+	if err := godotenv.Load("config/enviroment.env"); err != nil {
+		log.Fatal("error missing enviroment file")
+	}
+
+	return &AgentConfig{
+		Port:             get("PORT", "8080"),
+		Path:             get("PATH_TASK", "/internal/task"),
+		AgentsValue:      getInt("COMPUTING_POWER", "10"),
+		AgentPeriodicity: getTime("AGENT_PERIODICITY_MS", "100"),
+		OperationTime: models.OperationTime{
+			Add: getTime("TIME_ADDITION_MS", "100"),
+			Sub: getTime("TIME_SUBTRACTION_MS", "100"),
+			Mul: getTime("TIME_MULTIPLICATION_MS", "500"),
+			Div: getTime("TIME_DIVISION_MS", "500")},
 	}
 }
