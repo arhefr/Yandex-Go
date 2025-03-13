@@ -1,13 +1,14 @@
 package router
 
 import (
-	models_agent "calculator/internal/agent/models"
-	"calculator/internal/orchestrator/models"
-	repo "calculator/internal/repository"
-	Err "calculator/pkg/errors"
-	"calculator/pkg/tools"
 	"fmt"
 	"net/http"
+
+	models_agent "github.com/arhefr/Yandex-Go/internal/agent/models"
+	"github.com/arhefr/Yandex-Go/internal/orchestrator/models"
+	repo "github.com/arhefr/Yandex-Go/internal/repository"
+	Err "github.com/arhefr/Yandex-Go/pkg/errors"
+	"github.com/arhefr/Yandex-Go/pkg/tools"
 
 	"github.com/labstack/echo/v4"
 )

@@ -1,8 +1,9 @@
 package repository
 
 import (
-	"calculator/internal/orchestrator/models"
 	"sync"
+
+	"github.com/arhefr/Yandex-Go/internal/orchestrator/models"
 )
 
 var Tasks = NewSafeMap()

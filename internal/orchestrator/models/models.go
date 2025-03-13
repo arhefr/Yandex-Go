@@ -1,8 +1,9 @@
 package models
 
 import (
-	"calculator/pkg/parser"
 	"fmt"
+
+	"github.com/arhefr/Yandex-Go/pkg/parser"
 )
 
 const (

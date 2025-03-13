@@ -1,9 +1,10 @@
 package main
 
 import (
-	"calculator/config"
-	"calculator/internal/agent/client"
 	"os"
+
+	"github.com/arhefr/Yandex-Go/config"
+	"github.com/arhefr/Yandex-Go/internal/agent/client"
 
 	log "github.com/sirupsen/logrus"
 )

@@ -2,17 +2,18 @@ package client
 
 import (
 	"bytes"
-	cfg "calculator/config"
-	"calculator/internal/agent/models"
-	"calculator/internal/agent/service"
-	orchestrator "calculator/internal/orchestrator/models"
-	Err "calculator/pkg/errors"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"runtime"
 	"sync"
 	"time"
+
+	cfg "github.com/arhefr/Yandex-Go/config"
+	"github.com/arhefr/Yandex-Go/internal/agent/models"
+	"github.com/arhefr/Yandex-Go/internal/agent/service"
+	orchestrator "github.com/arhefr/Yandex-Go/internal/orchestrator/models"
+	Err "github.com/arhefr/Yandex-Go/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -37,8 +38,11 @@ func Worker(tick time.Duration, operation_time models.OperationTime, wg *sync.Wa
 		start := time.Now()
 
 		task, err := fetchTask(url)
-		if err != nil && err != Err.NotFoundTask {
-			log.Warn(err)
+		if err != nil {
+			if err == Err.IncorrectJSON {
+				log.Warn(err)
+			}
+			continue
 		}
 
 		res := service.MakeTask(task, operation_time)

@@ -1,8 +1,8 @@
 package parser
 
 import (
-	Err "calculator/pkg/errors"
-	"calculator/pkg/tools"
+	Err "github.com/arhefr/Yandex-Go/pkg/errors"
+	"github.com/arhefr/Yandex-Go/pkg/tools"
 )
 
 func GetNumsOps(expression string) ([]float64, []Operator, error) {

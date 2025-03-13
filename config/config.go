@@ -1,9 +1,10 @@
 package config
 
 import (
-	"calculator/internal/agent/models"
-	router "calculator/internal/orchestrator/transport/http"
 	"time"
+
+	"github.com/arhefr/Yandex-Go/internal/agent/models"
+	router "github.com/arhefr/Yandex-Go/internal/orchestrator/transport/http"
 
 	log "github.com/sirupsen/logrus"
 

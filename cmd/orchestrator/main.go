@@ -1,9 +1,10 @@
 package main
 
 import (
-	"calculator/config"
-	router "calculator/internal/orchestrator/transport/http"
 	"os"
+
+	"github.com/arhefr/Yandex-Go/config"
+	router "github.com/arhefr/Yandex-Go/internal/orchestrator/transport/http"
 
 	log "github.com/sirupsen/logrus"
 )
