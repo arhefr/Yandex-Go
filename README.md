@@ -2,7 +2,7 @@
 ![Слайд1](https://github.com/user-attachments/assets/a1250ba0-7909-42aa-8cdf-887946252dac)
 # **Content**
   - [**Description**](#description)
-  - [**Run Server**](#run-server)
+  - [**Run Server**](#start)
   - [**Endpoints**](#endpoints)
   - [**Feedback**](#feedback)
 
@@ -16,14 +16,20 @@
 >Orchestrator <-----> |"Task/Result"| AgentN("Agent N")
 >```
 
-# **Run Server**
+# **Start**
 >[!IMPORTANT]
->### Download Golang 1.23.4+
+>- ### Download Golang 1.23.4+
+>- ### Download dependencies:
+>  ``` shell
+>  go mod tidy
+>  ```
+>- ### In one terminal start orchestrator:
 > ``` shell
-> cd calculator
+> go run cmd/orchestrator/main.go
 > ```
+>- ### In another one terminal start agents:
 > ``` shell
-> go run cmd/server/main.go
+> go run cmd/agent/main.go
 > ```
 > 
 # **Endpoints**
