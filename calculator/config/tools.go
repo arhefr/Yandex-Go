@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func getEnv(key string, defaultVal string) string {
+func get(key string, defaultVal string) string {
 	if value, exists := os.LookupEnv(key); exists {
 		return value
 	}
@@ -14,15 +14,15 @@ func getEnv(key string, defaultVal string) string {
 	return defaultVal
 }
 
-func getEnvTime(key string, defaultVal string) time.Duration {
-	if duration, err := time.ParseDuration(getEnv(key, defaultVal) + "ms"); err == nil {
+func getTime(key string, defaultVal string) time.Duration {
+	if duration, err := time.ParseDuration(get(key, defaultVal) + "ms"); err == nil {
 		return time.Duration(duration)
 	}
 	return time.Millisecond
 }
 
-func getEnvInt(key string, defaultVal string) int {
-	if num, err := strconv.Atoi(getEnv(key, defaultVal)); err == nil {
+func getInt(key string, defaultVal string) int {
+	if num, err := strconv.Atoi(get(key, defaultVal)); err == nil {
 		return num
 	}
 	return 1

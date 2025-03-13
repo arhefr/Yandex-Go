@@ -6,12 +6,12 @@ import (
 	"strconv"
 )
 
-func NewCryptoRand() int {
+func NewCryptoRand() string {
 	safeNum, err := crypto.Int(crypto.Reader, big.NewInt(1000000))
 	if err != nil {
 		panic(err)
 	}
-	return int(safeNum.Int64())
+	return strconv.Itoa(int(safeNum.Int64()))
 }
 
 func SliceTypeToFloat64(numsString []string) ([]float64, error) {
