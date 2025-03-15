@@ -3,8 +3,8 @@ package service
 import (
 	"time"
 
-	models_agent "github.com/arhefr/Yandex-Go/internal/agent/models"
-	models_orchestrator "github.com/arhefr/Yandex-Go/internal/orchestrator/models"
+	models_agent "github.com/arhefr/Yandex-Go/internal/agent/model"
+	models_orchestrator "github.com/arhefr/Yandex-Go/internal/orchestrator/model"
 )
 
 func MakeTask(task *models_orchestrator.Task, operation_time models_agent.OperationTime) float64 {

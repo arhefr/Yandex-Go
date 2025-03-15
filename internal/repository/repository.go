@@ -3,27 +3,27 @@ package repository
 import (
 	"sync"
 
-	"github.com/arhefr/Yandex-Go/internal/orchestrator/models"
+	"github.com/arhefr/Yandex-Go/internal/orchestrator/model"
 )
 
 var Tasks = NewSafeMap()
 
 type repository struct {
 	mu sync.Mutex
-	m  map[string]models.Expression
+	m  map[string]model.Expression
 }
 
 func NewSafeMap() *repository {
-	return &repository{m: make(map[string]models.Expression), mu: sync.Mutex{}}
+	return &repository{m: make(map[string]model.Expression), mu: sync.Mutex{}}
 }
 
-func (r *repository) Add(key string, value models.Expression) {
+func (r *repository) Add(key string, value model.Expression) {
 	r.mu.Lock()
 	r.m[key] = value
 	r.mu.Unlock()
 }
 
-func (r *repository) Get(key string) (models.Expression, bool) {
+func (r *repository) Get(key string) (model.Expression, bool) {
 	r.mu.Lock()
 
 	if value, ok := r.m[key]; ok {
@@ -31,7 +31,7 @@ func (r *repository) Get(key string) (models.Expression, bool) {
 		return value, ok
 	}
 	r.mu.Unlock()
-	return models.Expression{}, false
+	return model.Expression{}, false
 }
 
 func (r *repository) Delete(key string) {
@@ -50,8 +50,8 @@ func (r *repository) GetKeys() []string {
 	return array
 }
 
-func (r *repository) GetValues() []models.Expression {
-	var array []models.Expression
+func (r *repository) GetValues() []model.Expression {
+	var array []model.Expression
 	r.mu.Lock()
 	for key := range r.m {
 		array = append(array, r.m[key])

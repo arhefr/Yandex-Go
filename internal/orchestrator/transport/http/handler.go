@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	models_agent "github.com/arhefr/Yandex-Go/internal/agent/models"
-	"github.com/arhefr/Yandex-Go/internal/orchestrator/models"
+	models_agent "github.com/arhefr/Yandex-Go/internal/agent/model"
+	"github.com/arhefr/Yandex-Go/internal/orchestrator/model"
 	repo "github.com/arhefr/Yandex-Go/internal/repository"
 	Err "github.com/arhefr/Yandex-Go/pkg/errors"
 	"github.com/arhefr/Yandex-Go/pkg/tools"
@@ -14,14 +14,14 @@ import (
 )
 
 func AddExpr(ctx echo.Context) error {
-	request := new(models.Request)
+	request := new(model.Request)
 
 	if err := ctx.Bind(&request); err != nil {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.IncorrectJSON)
 	}
 
 	id := tools.NewCryptoRand()
-	expr := models.NewExpression(id, request)
+	expr := model.NewExpression(id, request)
 	repo.Tasks.Add(id, expr)
 	return ctx.JSON(http.StatusOK, struct {
 		ID string `json:"id"`
@@ -32,7 +32,7 @@ func GetIDs(ctx echo.Context) error {
 	exprs := repo.Tasks.GetValues()
 	return ctx.JSON(http.StatusOK,
 		struct {
-			Exprs []models.Expression `json:"expressions"`
+			Exprs []model.Expression `json:"expressions"`
 		}{exprs})
 }
 
@@ -52,10 +52,10 @@ func FetchTask(ctx echo.Context) error {
 	expr.Parser.Nums, expr.Parser.Ops = op.Replace(expr.Parser.Nums, expr.Parser.Ops, req.Result)
 
 	if len(expr.Parser.Nums) == 1 {
-		expr.Status = models.StatusDone
+		expr.Status = model.StatusDone
 		expr.Result = fmt.Sprintf("%.3f", expr.Parser.Nums[0])
 	} else {
-		expr.Status = models.StatusWait
+		expr.Status = model.StatusWait
 	}
 	repo.Tasks.Add(req.ID, expr)
 
@@ -65,8 +65,8 @@ func FetchTask(ctx echo.Context) error {
 func GetTask(ctx echo.Context) error {
 
 	for _, expr := range repo.Tasks.GetValues() {
-		if expr.Status == models.StatusWait {
-			expr.Status = models.StatusCalc
+		if expr.Status == model.StatusWait {
+			expr.Status = model.StatusCalc
 			repo.Tasks.Add(expr.ID, expr)
 			return ctx.JSON(http.StatusOK, expr.GetTask())
 		}
@@ -84,6 +84,6 @@ func GetID(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusOK, struct {
-		Expr models.Expression `json:"expression"`
+		Expr model.Expression `json:"expression"`
 	}{expr})
 }

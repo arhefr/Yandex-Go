@@ -10,9 +10,9 @@ import (
 	"time"
 
 	cfg "github.com/arhefr/Yandex-Go/config"
-	"github.com/arhefr/Yandex-Go/internal/agent/models"
+	"github.com/arhefr/Yandex-Go/internal/agent/model"
 	"github.com/arhefr/Yandex-Go/internal/agent/service"
-	orchestrator "github.com/arhefr/Yandex-Go/internal/orchestrator/models"
+	orchestrator "github.com/arhefr/Yandex-Go/internal/orchestrator/model"
 	Err "github.com/arhefr/Yandex-Go/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
@@ -31,7 +31,7 @@ func RunWorkers(cfg *cfg.AgentConfig) {
 	log.Infof("%d Workers starting on: %s", runtime.NumGoroutine()-1, url)
 }
 
-func Worker(tick time.Duration, operation_time models.OperationTime, wg *sync.WaitGroup, url string) {
+func Worker(tick time.Duration, operation_time model.OperationTime, wg *sync.WaitGroup, url string) {
 	defer wg.Done()
 	for {
 		time.Sleep(tick)
@@ -46,7 +46,7 @@ func Worker(tick time.Duration, operation_time models.OperationTime, wg *sync.Wa
 		}
 
 		res := service.MakeTask(task, operation_time)
-		req := models.Response{ID: task.ID, Result: res}
+		req := model.Response{ID: task.ID, Result: res}
 		log.Debug(task.ID, res, time.Since(start))
 
 		buf := bytes.NewBuffer([]byte{})
