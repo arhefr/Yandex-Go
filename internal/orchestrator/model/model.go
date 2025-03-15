@@ -31,11 +31,10 @@ type Task struct {
 }
 
 type Expression struct {
-	ID       string `json:"id"`
-	Status   string `json:"status"`
-	Result   string `json:"result"`
-	*Request `json:"-"`
-	Parser   `json:"-"`
+	ID      string `json:"id"`
+	Status  string `json:"status"`
+	Result  string `json:"result"`
+	*Parser `json:"-"`
 }
 
 type Parser struct {
@@ -46,10 +45,10 @@ type Parser struct {
 func NewExpression(id string, request *Request) Expression {
 	nums, ops, err := parser.GetNumsOps(request.Expression)
 	if err != nil {
-		return Expression{ID: id, Status: StatusDone, Result: fmt.Sprintf("%s", err), Request: request}
+		return Expression{ID: id, Status: StatusDone, Result: fmt.Sprintf("%s", err)}
 	}
 
-	return Expression{ID: id, Status: StatusWait, Request: request, Parser: Parser{nums, ops}}
+	return Expression{ID: id, Status: StatusWait, Parser: &Parser{nums, ops}}
 }
 
 func (e Expression) GetTask() *Task {
