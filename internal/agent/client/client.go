@@ -12,7 +12,7 @@ import (
 	cfg "github.com/arhefr/Yandex-Go/config"
 	"github.com/arhefr/Yandex-Go/internal/agent/model"
 	"github.com/arhefr/Yandex-Go/internal/agent/service"
-	orchestrator "github.com/arhefr/Yandex-Go/internal/orchestrator/model"
+	modelO "github.com/arhefr/Yandex-Go/internal/orchestrator/model"
 	Err "github.com/arhefr/Yandex-Go/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
@@ -33,11 +33,12 @@ func RunWorkers(cfg *cfg.AgentConfig) {
 
 func Worker(tick time.Duration, operation_time model.OperationTime, wg *sync.WaitGroup, url string) {
 	defer wg.Done()
+
 	for {
 		time.Sleep(tick)
-		start := time.Now()
+		// start := time.Now()
 
-		task, err := fetchTask(url)
+		task, err := getWork(url)
 		if err != nil {
 			if err == Err.IncorrectJSON {
 				log.Warn(err)
@@ -46,11 +47,10 @@ func Worker(tick time.Duration, operation_time model.OperationTime, wg *sync.Wai
 		}
 
 		res := service.MakeTask(task, operation_time)
-		req := model.Response{ID: task.ID, Result: res}
-		log.Debug(task.ID, res, time.Since(start))
 
+		resp := model.Response{ID: task.ID, Sub_ID: task.Sub_ID, Result: res}
 		buf := bytes.NewBuffer([]byte{})
-		if err := json.NewEncoder(buf).Encode(req); err != nil {
+		if err := json.NewEncoder(buf).Encode(resp); err != nil {
 			log.Warn(Err.IncorrectJSON)
 		}
 
@@ -60,8 +60,8 @@ func Worker(tick time.Duration, operation_time model.OperationTime, wg *sync.Wai
 	}
 }
 
-func fetchTask(url string) (*orchestrator.Task, error) {
-	task := new(orchestrator.Task)
+func getWork(url string) (*modelO.Task, error) {
+	task := new(modelO.Task)
 
 	resp, err := http.Get(url)
 	if err != nil {

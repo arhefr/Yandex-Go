@@ -3,82 +3,41 @@ package router
 import (
 	"fmt"
 	"net/http"
+	"slices"
+	"sync"
 
-	models_agent "github.com/arhefr/Yandex-Go/internal/agent/model"
+	agent "github.com/arhefr/Yandex-Go/internal/agent/model"
 	"github.com/arhefr/Yandex-Go/internal/orchestrator/model"
 	repo "github.com/arhefr/Yandex-Go/internal/repository"
 	Err "github.com/arhefr/Yandex-Go/pkg/errors"
 	"github.com/arhefr/Yandex-Go/pkg/tools"
-
 	"github.com/labstack/echo/v4"
 )
 
 func AddExpr(ctx echo.Context) error {
-	request := new(model.Request)
+	req := new(model.Request)
 
-	if err := ctx.Bind(&request); err != nil {
+	if err := ctx.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.IncorrectJSON)
 	}
 
-	id := tools.NewCryptoRand()
-	expr := model.NewExpression(id, request)
-	repo.Tasks.Add(id, expr)
+	expr := model.NewExpression(tools.NewCryptoRand(), req)
+	repo.Exprs.Add(expr.ID, expr)
 	return ctx.JSON(http.StatusOK, struct {
 		ID string `json:"id"`
-	}{id})
+	}{expr.ID})
 }
 
 func GetIDs(ctx echo.Context) error {
-	exprs := repo.Tasks.GetValues()
+	exprs := repo.Exprs.GetValues()
 	return ctx.JSON(http.StatusOK,
 		struct {
 			Exprs []model.Expression `json:"expressions"`
 		}{exprs})
 }
 
-func FetchTask(ctx echo.Context) error {
-	req := new(models_agent.Response)
-
-	if err := ctx.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.IncorrectJSON)
-	}
-
-	expr, exists := repo.Tasks.Get(req.ID)
-	if !exists {
-		return echo.NewHTTPError(http.StatusNotFound, Err.IncorrectID)
-	}
-
-	op := expr.Parser.Ops[0]
-	expr.Parser.Nums, expr.Parser.Ops = op.Replace(expr.Parser.Nums, expr.Parser.Ops, req.Result)
-
-	if len(expr.Parser.Nums) == 1 {
-		expr.Status = model.StatusDone
-		expr.Result = fmt.Sprintf("%.3f", expr.Parser.Nums[0])
-	} else {
-		expr.Status = model.StatusWait
-	}
-	repo.Tasks.Add(req.ID, expr)
-
-	return ctx.JSON(http.StatusOK, nil)
-}
-
-func GetTask(ctx echo.Context) error {
-
-	for _, expr := range repo.Tasks.GetValues() {
-		if expr.Status == model.StatusWait {
-			expr.Status = model.StatusCalc
-			repo.Tasks.Add(expr.ID, expr)
-			return ctx.JSON(http.StatusOK, expr.GetTask())
-		}
-	}
-
-	return echo.NewHTTPError(http.StatusNotFound, Err.NotFoundTask)
-}
-
 func GetID(ctx echo.Context) error {
-	id := ctx.Param("id")
-
-	expr, exists := repo.Tasks.Get(id)
+	expr, exists := repo.Exprs.Get(ctx.Param("id"))
 	if !exists {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.IncorrectID)
 	}
@@ -86,4 +45,46 @@ func GetID(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, struct {
 		Expr model.Expression `json:"expression"`
 	}{expr})
+}
+
+func FetchTask(ctx echo.Context) error {
+	var task agent.Response
+
+	if err := ctx.Bind(&task); err != nil {
+		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.IncorrectJSON)
+	}
+
+	expr, _ := repo.Exprs.Get(task.ID)
+	i := model.GetIndex(expr.PostNote, task.Sub_ID)
+	if i == -1 {
+		return nil
+	}
+	postNote := slices.Replace(expr.PostNote, i, i+1, model.Entity{Name: task.Result})
+
+	if len(postNote) == 1 {
+		expr.Result = postNote[0].Name
+		expr.Status = model.StatusDone
+	}
+
+	repo.Exprs.Add(expr.ID, expr)
+	return nil
+}
+
+func GetTask(ctx echo.Context) error {
+	var mu sync.RWMutex
+
+	mu.Lock()
+	defer mu.Unlock()
+	for _, expr := range repo.Exprs.GetValues() {
+		if task, err := expr.GetTask(); expr.Status == model.StatusWait && err == nil {
+			i := model.GetIndex(expr.PostNote, task.Sub_ID)
+			repo.Exprs.Add(expr.ID, model.Expression{ID: expr.ID, Status: expr.Status, Result: expr.Result, PostNote: append(expr.PostNote[:i-2], expr.PostNote[i:]...)})
+
+			return ctx.JSON(http.StatusOK, task)
+		} else if err != nil && err != Err.NotFoundTask {
+			repo.Exprs.Add(expr.ID, model.Expression{ID: expr.ID, Status: model.StatusDone, Result: fmt.Sprint(err)})
+		}
+	}
+
+	return echo.NewHTTPError(http.StatusNotFound, Err.NotFoundTask)
 }

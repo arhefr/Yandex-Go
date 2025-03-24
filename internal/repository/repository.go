@@ -6,7 +6,7 @@ import (
 	"github.com/arhefr/Yandex-Go/internal/orchestrator/model"
 )
 
-var Tasks = NewSafeMap()
+var Exprs = NewSafeMap()
 
 type repository struct {
 	mu sync.Mutex
