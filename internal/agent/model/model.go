@@ -5,8 +5,9 @@ import (
 )
 
 type Response struct {
-	ID     string  `json:"id"`
-	Result float64 `json:"result"`
+	ID     string `json:"id"`
+	Sub_ID int    `json:"sub_id"`
+	Result string `json:"result"`
 }
 
 type OperationTime struct {

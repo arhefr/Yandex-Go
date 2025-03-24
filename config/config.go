@@ -23,12 +23,7 @@ type AgentConfig struct {
 	AgentsValue      int
 	AgentPeriodicity time.Duration
 
-	OperationTime struct {
-		Add time.Duration
-		Sub time.Duration
-		Mul time.Duration
-		Div time.Duration
-	}
+	model.OperationTime
 }
 
 func NewConfig() *Config {
