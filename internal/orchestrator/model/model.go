@@ -10,23 +10,41 @@ import (
 const (
 	StatusWait = "waiting"
 	StatusCalc = "calculating"
+	StatusErr  = "error"
 	StatusDone = "done"
 )
 
 type Request struct {
-	Expression string `json:"expression"`
+	ID       string   `json:"id"`
+	Status   string   `json:"status"`
+	Result   string   `json:"result"`
+	PostNote []Entity `json:"-"`
 }
 
 type Response struct {
-	ID      string `json:"id"`
-	Status  int    `json:"status"`
-	Request string `json:"request"`
-	Result  string `json:"result"`
+	ID     string `json:"id"`
+	Sub_ID int    `json:"sub_id"`
+	Result string `json:"result"`
+}
+
+type Expression struct {
+	Expr string `json:"expression"`
 }
 
 type Entity struct {
 	Name  string
 	Index int
+}
+
+func NewExpr(id string, request *Expression) Request {
+	postNote := InfixPostfix(request.Expr)
+
+	var postNoteEnt []Entity
+	for i := range postNote {
+		postNoteEnt = append(postNoteEnt, Entity{Name: postNote[i], Index: i})
+	}
+
+	return Request{ID: id, Status: StatusWait, PostNote: postNoteEnt}
 }
 
 type Task struct {
@@ -47,40 +65,22 @@ func NewTask(id string, sub_id int, arg1, arg2 string, oper string) (Task, error
 	return Task{ID: id, Sub_ID: sub_id, Arg1: n1, Arg2: n2, Oper: oper}, nil
 }
 
-type Expression struct {
-	ID       string   `json:"id"`
-	Status   string   `json:"status"`
-	Result   string   `json:"result"`
-	PostNote []Entity `json:"-"`
-}
+func (r Request) GetTask() (Task, error) {
+	for i := range r.PostNote {
+		if IsOp(r.PostNote[i].Name) && i >= 2 {
 
-func (e Expression) GetTask() (Task, error) {
-	for i := range e.PostNote {
-		if IsOp(e.PostNote[i].Name) && i >= 2 {
-
-			arg1, arg2, oper := e.PostNote[i-2].Name, e.PostNote[i-1].Name, e.PostNote[i]
+			arg1, arg2, oper := r.PostNote[i-2].Name, r.PostNote[i-1].Name, r.PostNote[i]
 			if arg2 == "0" && oper.Name == "/" {
 				return Task{}, Err.DivisionByZero
 			}
 
 			if IsNum(arg1) && IsNum(arg2) {
-				return NewTask(e.ID, oper.Index, arg1, arg2, oper.Name)
+				return NewTask(r.ID, oper.Index, arg1, arg2, oper.Name)
 			}
 		}
 	}
 
 	return Task{}, Err.NotFoundTask
-}
-
-func NewExpression(id string, request *Request) Expression {
-	postNote := InfixPostfix(request.Expression)
-
-	var postNoteEnt []Entity
-	for i := range postNote {
-		postNoteEnt = append(postNoteEnt, Entity{Name: postNote[i], Index: i})
-	}
-
-	return Expression{ID: id, Status: StatusWait, PostNote: postNoteEnt}
 }
 
 func GetIndex(postNote []Entity, index int) int {

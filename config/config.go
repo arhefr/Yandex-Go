@@ -3,9 +3,7 @@ package config
 import (
 	"time"
 
-	"github.com/arhefr/Yandex-Go/internal/agent/model"
 	router "github.com/arhefr/Yandex-Go/internal/orchestrator/transport/http"
-
 	log "github.com/sirupsen/logrus"
 
 	"github.com/joho/godotenv"
@@ -23,7 +21,14 @@ type AgentConfig struct {
 	AgentsValue      int
 	AgentPeriodicity time.Duration
 
-	model.OperationTime
+	OperTime
+}
+
+type OperTime struct {
+	Add time.Duration
+	Sub time.Duration
+	Mul time.Duration
+	Div time.Duration
 }
 
 func NewConfig() *Config {
@@ -60,7 +65,7 @@ func NewAgentConfig() *AgentConfig {
 		Path:             get("PATH_TASK", "/internal/task"),
 		AgentsValue:      getInt("COMPUTING_POWER", "10"),
 		AgentPeriodicity: getTime("AGENT_PERIODICITY_MS", "100"),
-		OperationTime: model.OperationTime{
+		OperTime: OperTime{
 			Add: getTime("TIME_ADDITION_MS", "100"),
 			Sub: getTime("TIME_SUBTRACTION_MS", "100"),
 			Mul: getTime("TIME_MULTIPLICATION_MS", "500"),

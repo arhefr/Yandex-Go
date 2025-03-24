@@ -10,9 +10,8 @@ import (
 	"time"
 
 	cfg "github.com/arhefr/Yandex-Go/config"
-	"github.com/arhefr/Yandex-Go/internal/agent/model"
 	"github.com/arhefr/Yandex-Go/internal/agent/service"
-	modelO "github.com/arhefr/Yandex-Go/internal/orchestrator/model"
+	model "github.com/arhefr/Yandex-Go/internal/orchestrator/model"
 	Err "github.com/arhefr/Yandex-Go/pkg/errors"
 
 	log "github.com/sirupsen/logrus"
@@ -25,18 +24,17 @@ func RunWorkers(cfg *cfg.AgentConfig) {
 	url := fmt.Sprintf("http://localhost:%s%s", cfg.Port, cfg.Path)
 	for i := 1; i <= cfg.AgentsValue; i++ {
 		wg.Add(1)
-		go Worker(cfg.AgentPeriodicity, cfg.OperationTime, wg, url)
+		go Worker(cfg.AgentPeriodicity, cfg.OperTime, wg, url)
 	}
 
 	log.Infof("%d Workers starting on: %s", runtime.NumGoroutine()-1, url)
 }
 
-func Worker(tick time.Duration, operation_time model.OperationTime, wg *sync.WaitGroup, url string) {
+func Worker(tick time.Duration, operTime cfg.OperTime, wg *sync.WaitGroup, url string) {
 	defer wg.Done()
 
 	for {
 		time.Sleep(tick)
-		// start := time.Now()
 
 		task, err := getWork(url)
 		if err != nil {
@@ -46,7 +44,7 @@ func Worker(tick time.Duration, operation_time model.OperationTime, wg *sync.Wai
 			continue
 		}
 
-		res := service.MakeTask(task, operation_time)
+		res := service.MakeTask(task, operTime)
 
 		resp := model.Response{ID: task.ID, Sub_ID: task.Sub_ID, Result: res}
 		buf := bytes.NewBuffer([]byte{})
@@ -60,8 +58,8 @@ func Worker(tick time.Duration, operation_time model.OperationTime, wg *sync.Wai
 	}
 }
 
-func getWork(url string) (*modelO.Task, error) {
-	task := new(modelO.Task)
+func getWork(url string) (*model.Task, error) {
+	task := new(model.Task)
 
 	resp, err := http.Get(url)
 	if err != nil {
