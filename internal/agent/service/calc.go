@@ -4,11 +4,10 @@ import (
 	"strconv"
 	"time"
 
-	cfg "github.com/arhefr/Yandex-Go/config"
 	"github.com/arhefr/Yandex-Go/internal/orchestrator/model"
 )
 
-func MakeTask(task *model.Task, operTime cfg.OperTime) string {
+func MakeTask(task *model.Task, operTime OperTime) string {
 	var res float64
 
 	n1, n2 := task.Arg1, task.Arg2

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"runtime"
-	"sync"
 	"time"
 
 	cfg "github.com/arhefr/Yandex-Go/config"
@@ -18,21 +17,20 @@ import (
 )
 
 func RunWorkers(cfg *cfg.AgentConfig) {
-	wg := &sync.WaitGroup{}
-	defer wg.Wait()
 
-	url := fmt.Sprintf("http://localhost:%s%s", cfg.Port, cfg.Path)
+	cfg.WG.Add(cfg.AgentsValue)
 	for i := 1; i <= cfg.AgentsValue; i++ {
-		wg.Add(1)
-		go Worker(cfg.AgentPeriodicity, cfg.OperTime, wg, url)
+		go func() {
+			Worker(cfg.AgentPeriodicity, cfg.OperTime, fmt.Sprintf("http://localhost:%s%s", cfg.Port, cfg.Path))
+			cfg.WG.Done()
+		}()
 	}
 
-	log.Infof("%d Workers starting on: %s", runtime.NumGoroutine()-1, url)
+	log.Infof("%d Workers start working", runtime.NumGoroutine()-1)
+	cfg.WG.Wait()
 }
 
-func Worker(tick time.Duration, operTime cfg.OperTime, wg *sync.WaitGroup, url string) {
-	defer wg.Done()
-
+func Worker(tick time.Duration, operTime cfg.OperTime, url string) {
 	for {
 		time.Sleep(tick)
 

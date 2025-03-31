@@ -16190,3 +16190,6 @@ time="2025-03-24T18:34:10+03:00" level=warning msg="error cannot connect to serv
 time="2025-03-24T18:34:10+03:00" level=warning msg="error cannot connect to server"
 time="2025-03-24T18:36:38+03:00" level=info msg="10 Workers starting on: http://localhost:8080/internal/task"
 time="2025-03-24T18:36:44+03:00" level=info msg="Server start on localhost:8080"
+time="2025-03-31T16:23:30+03:00" level=info msg="10 Workers start working"
+time="2025-03-31T16:23:30+03:00" level=info msg="Server start on localhost:8080"
+time="2025-03-31T16:45:30+03:00" level=info msg="10 Workers start working"

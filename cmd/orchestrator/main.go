@@ -21,7 +21,7 @@ func init() {
 
 func main() {
 	// Setup Config
-	cfg := config.NewRouterConfig()
+	cfg := config.NewRouterCfg()
 
 	// Run Orchestrator
 	router := router.NewRouter(cfg)

@@ -21,7 +21,7 @@ func init() {
 
 func main() {
 	// Setup Config
-	cfg := config.NewAgentConfig()
+	cfg := config.NewAgentCfg()
 
 	// Run Agent's
 	client.RunWorkers(cfg)
