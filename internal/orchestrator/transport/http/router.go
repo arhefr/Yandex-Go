@@ -26,8 +26,8 @@ func NewRouter(config *Config) Router {
 	e.POST(config.PathAdd, AddExpr)
 	e.GET(config.PathGet, GetIDs)
 	e.GET(config.PathGet+"/:id", GetID)
-	e.GET(config.PathTask, GetTask)
-	e.POST(config.PathTask, FetchTask)
+	e.GET(config.PathTask, SendTask)
+	e.POST(config.PathTask, CatchTask)
 
 	return Router{Config: config, Echo: e}
 }

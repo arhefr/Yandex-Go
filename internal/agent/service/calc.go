@@ -4,27 +4,26 @@ import (
 	"strconv"
 	"time"
 
-	models_agent "github.com/arhefr/Yandex-Go/internal/agent/model"
-	models_orchestrator "github.com/arhefr/Yandex-Go/internal/orchestrator/model"
+	"github.com/arhefr/Yandex-Go/internal/orchestrator/model"
 )
 
-func MakeTask(task *models_orchestrator.Task, operation_time models_agent.OperationTime) string {
+func MakeTask(task *model.Task, operTime OperTime) string {
 	var res float64
 
 	n1, n2 := task.Arg1, task.Arg2
 
 	switch task.Oper {
 	case "*":
-		time.Sleep(operation_time.Mul)
+		time.Sleep(operTime.Mul)
 		res = n1 * n2
 	case "/":
-		time.Sleep(operation_time.Div)
+		time.Sleep(operTime.Div)
 		res = n1 / n2
 	case "+":
-		time.Sleep(operation_time.Add)
+		time.Sleep(operTime.Add)
 		res = n1 + n2
 	case "-":
-		time.Sleep(operation_time.Sub)
+		time.Sleep(operTime.Sub)
 		res = n1 - n2
 	}
 

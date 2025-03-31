@@ -6,22 +6,23 @@ import (
 	"slices"
 	"sync"
 
-	agent "github.com/arhefr/Yandex-Go/internal/agent/model"
 	"github.com/arhefr/Yandex-Go/internal/orchestrator/model"
 	repo "github.com/arhefr/Yandex-Go/internal/repository"
 	Err "github.com/arhefr/Yandex-Go/pkg/errors"
 	"github.com/arhefr/Yandex-Go/pkg/tools"
 	"github.com/labstack/echo/v4"
+	log "github.com/sirupsen/logrus"
 )
 
 func AddExpr(ctx echo.Context) error {
-	req := new(model.Request)
+	req := new(model.Expression)
 
 	if err := ctx.Bind(&req); err != nil {
+		log.Warn(Err.IncorrectJSON)
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.IncorrectJSON)
 	}
 
-	expr := model.NewExpression(tools.NewCryptoRand(), req)
+	expr := model.NewExpr(tools.NewCryptoRand(), req)
 	repo.Exprs.Add(expr.ID, expr)
 	return ctx.JSON(http.StatusOK, struct {
 		ID string `json:"id"`
@@ -32,7 +33,7 @@ func GetIDs(ctx echo.Context) error {
 	exprs := repo.Exprs.GetValues()
 	return ctx.JSON(http.StatusOK,
 		struct {
-			Exprs []model.Expression `json:"expressions"`
+			Exprs []model.Request `json:"expressions"`
 		}{exprs})
 }
 
@@ -43,14 +44,15 @@ func GetID(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusOK, struct {
-		Expr model.Expression `json:"expression"`
+		Expr model.Request `json:"expression"`
 	}{expr})
 }
 
-func FetchTask(ctx echo.Context) error {
-	var task agent.Response
+func CatchTask(ctx echo.Context) error {
+	var task model.Response
 
 	if err := ctx.Bind(&task); err != nil {
+		log.Warn(Err.IncorrectJSON)
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.IncorrectJSON)
 	}
 
@@ -70,19 +72,31 @@ func FetchTask(ctx echo.Context) error {
 	return nil
 }
 
-func GetTask(ctx echo.Context) error {
+func SendTask(ctx echo.Context) error {
 	var mu sync.RWMutex
 
 	mu.Lock()
 	defer mu.Unlock()
 	for _, expr := range repo.Exprs.GetValues() {
-		if task, err := expr.GetTask(); expr.Status == model.StatusWait && err == nil {
+		if task, err := expr.GetTask(); (expr.Status == model.StatusWait || expr.Status == model.StatusCalc) && err == nil {
 			i := model.GetIndex(expr.PostNote, task.Sub_ID)
-			repo.Exprs.Add(expr.ID, model.Expression{ID: expr.ID, Status: expr.Status, Result: expr.Result, PostNote: append(expr.PostNote[:i-2], expr.PostNote[i:]...)})
+			repo.Exprs.Add(expr.ID, model.Request{
+				ID:       expr.ID,
+				Status:   model.StatusCalc,
+				Result:   expr.Result,
+				PostNote: append(expr.PostNote[:i-2], expr.PostNote[i:]...),
+			})
 
 			return ctx.JSON(http.StatusOK, task)
+
 		} else if err != nil && err != Err.NotFoundTask {
-			repo.Exprs.Add(expr.ID, model.Expression{ID: expr.ID, Status: model.StatusDone, Result: fmt.Sprint(err)})
+			repo.Exprs.Add(expr.ID, model.Request{
+				ID:     expr.ID,
+				Status: model.StatusErr,
+				Result: fmt.Sprint(err),
+			})
+
+			return echo.NewHTTPError(http.StatusInternalServerError, Err.IncorrectExpr)
 		}
 	}
 

@@ -10,20 +10,20 @@ var Exprs = NewSafeMap()
 
 type repository struct {
 	mu sync.Mutex
-	m  map[string]model.Expression
+	m  map[string]model.Request
 }
 
 func NewSafeMap() *repository {
-	return &repository{m: make(map[string]model.Expression), mu: sync.Mutex{}}
+	return &repository{m: make(map[string]model.Request), mu: sync.Mutex{}}
 }
 
-func (r *repository) Add(key string, value model.Expression) {
+func (r *repository) Add(key string, value model.Request) {
 	r.mu.Lock()
 	r.m[key] = value
 	r.mu.Unlock()
 }
 
-func (r *repository) Get(key string) (model.Expression, bool) {
+func (r *repository) Get(key string) (model.Request, bool) {
 	r.mu.Lock()
 
 	if value, ok := r.m[key]; ok {
@@ -31,7 +31,7 @@ func (r *repository) Get(key string) (model.Expression, bool) {
 		return value, ok
 	}
 	r.mu.Unlock()
-	return model.Expression{}, false
+	return model.Request{}, false
 }
 
 func (r *repository) Delete(key string) {
@@ -50,8 +50,8 @@ func (r *repository) GetKeys() []string {
 	return array
 }
 
-func (r *repository) GetValues() []model.Expression {
-	var array []model.Expression
+func (r *repository) GetValues() []model.Request {
+	var array []model.Request
 	r.mu.Lock()
 	for key := range r.m {
 		array = append(array, r.m[key])

@@ -1,11 +1,10 @@
 package config
 
 import (
-	"time"
+	"sync"
 
-	"github.com/arhefr/Yandex-Go/internal/agent/model"
+	"github.com/arhefr/Yandex-Go/internal/agent/service"
 	router "github.com/arhefr/Yandex-Go/internal/orchestrator/transport/http"
-
 	log "github.com/sirupsen/logrus"
 
 	"github.com/joho/godotenv"
@@ -13,57 +12,38 @@ import (
 
 type Config struct {
 	RouterConfig router.Config
-	AgentConfig
+	AgentConfig  service.Config
 }
 
-type AgentConfig struct {
-	Port string
-	Path string
-
-	AgentsValue      int
-	AgentPeriodicity time.Duration
-
-	model.OperationTime
-}
-
-func NewConfig() *Config {
-	if err := godotenv.Load("config/enviroment.env"); err != nil {
-		log.Fatal("error missing enviroment file")
-	}
-
-	return &Config{
-		RouterConfig: *NewRouterConfig(),
-		AgentConfig:  *NewAgentConfig(),
-	}
-}
-
-func NewRouterConfig() *router.Config {
+func NewRouterCfg() *router.Config {
 	if err := godotenv.Load("config/enviroment.env"); err != nil {
 		log.Fatal("error missing enviroment file")
 	}
 
 	return &router.Config{
-		Port:     get("PORT", "8080"),
-		PathAdd:  get("PATH_ADD", "/api/v1/calculate"),
-		PathGet:  get("PATH_GET", "/api/v1/expressions"),
-		PathTask: get("PATH_TASK", "/internal/task"),
+		Port:     envStr("PORT", dfltPort),
+		PathAdd:  envStr("PATH_ADD", dfltPathAdd),
+		PathGet:  envStr("PATH_GET", dfltPathGet),
+		PathTask: envStr("PATH_TASK", dfltPathTask),
 	}
 }
 
-func NewAgentConfig() *AgentConfig {
+func NewServiceCfg() *service.Config {
 	if err := godotenv.Load("config/enviroment.env"); err != nil {
 		log.Fatal("error missing enviroment file")
 	}
 
-	return &AgentConfig{
-		Port:             get("PORT", "8080"),
-		Path:             get("PATH_TASK", "/internal/task"),
-		AgentsValue:      getInt("COMPUTING_POWER", "10"),
-		AgentPeriodicity: getTime("AGENT_PERIODICITY_MS", "100"),
-		OperationTime: model.OperationTime{
-			Add: getTime("TIME_ADDITION_MS", "100"),
-			Sub: getTime("TIME_SUBTRACTION_MS", "100"),
-			Mul: getTime("TIME_MULTIPLICATION_MS", "500"),
-			Div: getTime("TIME_DIVISION_MS", "500")},
+	return &service.Config{
+		Port:             envStr("PORT", dfltPort),
+		Path:             envStr("PATH_TASK", dfltPathTask),
+		AgentsValue:      envInt("COMPUTING_POWER", dfltAgentTick),
+		AgentPeriodicity: envTime("AGENT_PERIODICITY_MS", dfltAgentTick),
+		OperTime: service.OperTime{
+			Add: envTime("TIME_ADDITION_MS", dfltOperAdd),
+			Sub: envTime("TIME_SUBTRACTION_MS", dfltOperSub),
+			Mul: envTime("TIME_MULTIPLICATION_MS", dfltOperMul),
+			Div: envTime("TIME_DIVISION_MS", dfltOperDiv)},
+
+		WG: &sync.WaitGroup{},
 	}
 }
