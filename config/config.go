@@ -16,8 +16,8 @@ type Config struct {
 }
 
 func NewRouterCfg() *router.Config {
-	if err := godotenv.Load("config/enviroment.env"); err != nil {
-		log.Fatal("error missing enviroment file")
+	if err := godotenv.Load(".env"); err != nil {
+		log.Warn("error missing enviroment file. loading default params")
 	}
 
 	return &router.Config{
@@ -30,13 +30,13 @@ func NewRouterCfg() *router.Config {
 
 func NewServiceCfg() *service.Config {
 	if err := godotenv.Load("config/enviroment.env"); err != nil {
-		log.Fatal("error missing enviroment file")
+		log.Warn("error missing enviroment file. loading default params")
 	}
 
 	return &service.Config{
 		Port:             envStr("PORT", dfltPort),
 		Path:             envStr("PATH_TASK", dfltPathTask),
-		AgentsValue:      envInt("COMPUTING_POWER", dfltAgentTick),
+		AgentsValue:      envInt("COMPUTING_POWER", dfltCompPower),
 		AgentPeriodicity: envTime("AGENT_PERIODICITY_MS", dfltAgentTick),
 		OperTime: service.OperTime{
 			Add: envTime("TIME_ADDITION_MS", dfltOperAdd),

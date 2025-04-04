@@ -8,7 +8,6 @@ import (
 	"runtime"
 	"time"
 
-	cfg "github.com/arhefr/Yandex-Go/config"
 	"github.com/arhefr/Yandex-Go/internal/agent/service"
 	model "github.com/arhefr/Yandex-Go/internal/orchestrator/model"
 	Err "github.com/arhefr/Yandex-Go/pkg/errors"
@@ -16,7 +15,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func RunWorkers(cfg *cfg.AgentConfig) {
+func RunWorkers(cfg *service.Config) {
 
 	cfg.WG.Add(cfg.AgentsValue)
 	for i := 1; i <= cfg.AgentsValue; i++ {
@@ -30,15 +29,15 @@ func RunWorkers(cfg *cfg.AgentConfig) {
 	cfg.WG.Wait()
 }
 
-func Worker(tick time.Duration, operTime cfg.OperTime, url string) {
+func Worker(tick time.Duration, operTime service.OperTime, url string) {
 	for {
 		time.Sleep(tick)
 
 		task, err := getWork(url)
 		if err != nil {
-			if err == Err.IncorrectJSON {
-				log.Warn(err)
-			}
+			// if err == Err.IncorrectJSON {
+			log.Warn(err)
+			// }
 			continue
 		}
 

@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	// Setup Logger
+	// setup logger
 	file, err := os.OpenFile(".log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatal("error open logfile", err)
@@ -20,9 +20,9 @@ func init() {
 }
 
 func main() {
-	// Setup Config
-	cfg := config.NewAgentCfg()
+	// setup config
+	cfg := config.NewServiceCfg()
 
-	// Run Agent's
+	// run agents
 	client.RunWorkers(cfg)
 }

@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	// Setup Logger
+	// setup logger
 	file, err := os.OpenFile(".log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatal("error open logfile", err)
@@ -20,10 +20,10 @@ func init() {
 }
 
 func main() {
-	// Setup Config
+	// setup config
 	cfg := config.NewRouterCfg()
 
-	// Run Orchestrator
+	// run orchestrator
 	router := router.NewRouter(cfg)
 	router.Run()
 }

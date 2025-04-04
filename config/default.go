@@ -1,5 +1,6 @@
 package config
 
+// use this values, if in enviroment file they missing
 const (
 	dfltPort = "8080"
 
