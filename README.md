@@ -1,39 +1,39 @@
-``` mermaid
-graph TB
-  subgraph Convert to post notation
-  expr[1 * 2 + 3 * 4 + 5 * 6]
-  exprPostnote1[1 2 * 3 4 * 5 6 * + +]
-  expr --> exprPostnote1
-  end
+# Установка
+### Требования:
+
+- [**Golang**](https://go.dev/doc/install)
+- [**Docker**](https://www.docker.com/products/docker-desktop/)
+- [**Docker Compose**](https://docs.docker.com/compose/install/)
+- [**Git**](https://git-scm.com/downloads)
+
+### Клонирование репозитория:
+``` bash
+git clone https://github.com/arhefr/Yandex-Go
 ```
-``` mermaid
-graph TB
-exprPostnote2[1 2 * 3 4 * 5 6 * + +]
-exprPostnote4[2 42 +]
-task1{1 2 *}
-task2{3 4 *}
-task3{5 6 *}
-exprPostnote2 <--> task1
-exprPostnote2 <--> task2
-exprPostnote2 <--> task3
+``` bash
+cd Yandex-Go
+```
 
-mes1[Give tasks to agents]
-task1 --> mes1
-task2 --> mes1
-task3 --> mes1
+# Запуск:
+- ### Запуск с помощью Docker Compose:
+``` bash
+docker compose up
+```
 
-exprPostnote3[2 12 30 + +]
-exprPostnote2 ---> exprPostnote3
-task4{12 30 +}
-exprPostnote3 <--> task4
-task4 <--> mes1
-
-
-exprPostnote3 ---> exprPostnote4
-task5{2 42 +}
-exprPostnote4 <--> task5
-task5 <--> mes1
-
-exprPostnote5((44))
-exprPostnote4 ---> exprPostnote5
+- ### Запуск руками:
+``` bash
+set PORT = 8080
+```
+``` bash
+set COMPUTING_POWER = 5
+```
+``` bash
+set AGENT_PERIODICITY_MS=1000
+```
+- В разных терминалах выполните следующие комманды:
+``` bash
+go run agent/cmd/main.go
+```
+``` bash
+go run orch/cmd/main.go
 ```
