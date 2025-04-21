@@ -5,6 +5,7 @@ import (
 
 	. "github.com/arhefr/MathParser"
 	Err "github.com/arhefr/Yandex-Go/orch/internal/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -36,15 +37,28 @@ type Entity struct {
 	Index int
 }
 
-func NewExpr(id string, request *Expression) Request {
+func NewExpr(id string, request *Expression) (Request, error) {
 	postNote := InfixPostfix(request.Expr)
 
 	var postNoteEnt []Entity
+	var numsCnt, opsCnt int
 	for i := range postNote {
 		postNoteEnt = append(postNoteEnt, Entity{Name: postNote[i], Index: i})
+
+		if _, ok := Token[postNote[i]]; ok {
+			opsCnt++
+		} else {
+			numsCnt++
+		}
 	}
 
-	return Request{ID: id, Status: StatusWait, PostNote: postNoteEnt}
+	log.Info(numsCnt, opsCnt)
+	if numsCnt != opsCnt-1 {
+		return Request{}, Err.IncorrectExpr
+	}
+
+	req := Request{ID: id, Status: StatusWait, PostNote: postNoteEnt}
+	return req, nil
 }
 
 type Task struct {

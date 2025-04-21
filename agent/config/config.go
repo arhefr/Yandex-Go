@@ -8,14 +8,9 @@ import (
 
 	"github.com/arhefr/Yandex-Go/agent/internal/service"
 	log "github.com/sirupsen/logrus"
-
-	"github.com/joho/godotenv"
 )
 
 func NewServiceCfg() *service.Config {
-	if err := godotenv.Load(".env"); err != nil {
-		log.Warn("error missing env")
-	}
 
 	port := os.Getenv("PORT")
 	agentsValue, err := strconv.Atoi(os.Getenv("COMPUTING_POWER"))

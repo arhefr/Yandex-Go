@@ -3,13 +3,12 @@ module github.com/arhefr/Yandex-Go/orch
 go 1.23.4
 
 require (
-	github.com/arhefr/MathParser v0.0.0-20250318083357-43b8de5e53e8
-	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/sirupsen/logrus v1.9.3
 )
 
 require (
+	github.com/arhefr/MathParser v0.0.0-20250421074928-28eb8af44b8e // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect

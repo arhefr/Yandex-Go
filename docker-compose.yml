@@ -10,8 +10,8 @@ services:
     ports:
      - "80:2020"
     environment:
-      - COMPUTING_POWER=3
-      - AGENT_PERIODICITY_MS=1000
+      - COMPUTING_POWER=5
+      - AGENT_PERIODICITY_MS=100
       - PORT=8080
     depends_on:
       - orch
