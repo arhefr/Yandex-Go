@@ -22,10 +22,7 @@ func AddExpr(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.IncorrectJSON)
 	}
 
-	expr, err := model.NewExpr(tools.NewCryptoRand(), req)
-	if err != nil {
-		expr.Status, expr.Result = model.StatusErr, fmt.Sprint(err)
-	}
+	expr := model.NewExpr(tools.NewCryptoRand(), req)
 	repo.Exprs.Add(expr.ID, expr)
 	return ctx.JSON(http.StatusOK, struct {
 		ID string `json:"id"`

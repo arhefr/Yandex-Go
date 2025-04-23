@@ -3,9 +3,8 @@ package model
 import (
 	"strconv"
 
-	. "github.com/arhefr/MathParser"
+	parser "github.com/arhefr/MathParser"
 	Err "github.com/arhefr/Yandex-Go/orch/internal/errors"
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -20,6 +19,14 @@ type Request struct {
 	Status   string   `json:"status"`
 	Result   string   `json:"result"`
 	PostNote []Entity `json:"-"`
+}
+
+type Task struct {
+	ID     string  `json:"id"`
+	Sub_ID int     `json:"sub_id"`
+	Arg1   float64 `json:"arg1"`
+	Arg2   float64 `json:"arg2"`
+	Oper   string  `json:"operation"`
 }
 
 type Response struct {
@@ -37,36 +44,27 @@ type Entity struct {
 	Index int
 }
 
-func NewExpr(id string, request *Expression) (Request, error) {
-	postNote := InfixPostfix(request.Expr)
+func NewExpr(id string, request *Expression) Request {
+	postNote := parser.InfixPostfix(request.Expr)
 
 	var postNoteEnt []Entity
 	var numsCnt, opsCnt int
 	for i := range postNote {
 		postNoteEnt = append(postNoteEnt, Entity{Name: postNote[i], Index: i})
 
-		if _, ok := Token[postNote[i]]; ok {
+		if _, ok := parser.Token[postNote[i]]; ok {
 			opsCnt++
 		} else {
 			numsCnt++
 		}
 	}
 
-	log.Info(numsCnt, opsCnt)
-	if numsCnt != opsCnt-1 {
-		return Request{}, Err.IncorrectExpr
+	if numsCnt-1 != opsCnt {
+		return Request{ID: id, Status: StatusErr, Result: Err.IncorrectExpr.Error()}
 	}
 
 	req := Request{ID: id, Status: StatusWait, PostNote: postNoteEnt}
-	return req, nil
-}
-
-type Task struct {
-	ID     string  `json:"id"`
-	Sub_ID int     `json:"sub_id"`
-	Arg1   float64 `json:"arg1"`
-	Arg2   float64 `json:"arg2"`
-	Oper   string  `json:"operation"`
+	return req
 }
 
 func NewTask(id string, sub_id int, arg1, arg2 string, oper string) (Task, error) {
@@ -81,14 +79,14 @@ func NewTask(id string, sub_id int, arg1, arg2 string, oper string) (Task, error
 
 func (r Request) GetTask() (Task, error) {
 	for i := range r.PostNote {
-		if IsOp(r.PostNote[i].Name) && i >= 2 {
+		if parser.IsOp(r.PostNote[i].Name) && i >= 2 {
 
 			arg1, arg2, oper := r.PostNote[i-2].Name, r.PostNote[i-1].Name, r.PostNote[i]
 			if arg2 == "0" && oper.Name == "/" {
 				return Task{}, Err.DivisionByZero
 			}
 
-			if IsNum(arg1) && IsNum(arg2) {
+			if parser.IsNum(arg1) && parser.IsNum(arg2) {
 				return NewTask(r.ID, oper.Index, arg1, arg2, oper.Name)
 			}
 		}

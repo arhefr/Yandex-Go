@@ -10,5 +10,5 @@ RUN go mod tidy && go build -o ./bin/app ./cmd/main.go
 FROM alpine:3.21.3
 COPY --from=builder /app/bin/app /
 
-EXPOSE 2020
+EXPOSE 3030
 ENTRYPOINT ["/app"]

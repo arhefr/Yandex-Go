@@ -8,10 +8,10 @@ services:
   agent:
     build: ./agent
     ports:
-     - "80:2020"
+     - "80:3030"
     environment:
       - COMPUTING_POWER=5
-      - AGENT_PERIODICITY_MS=100
+      - AGENT_PERIODICITY_MS=50
       - PORT=8080
     depends_on:
       - orch
