@@ -8,37 +8,53 @@ import (
 
 	Err "github.com/arhefr/Yandex-Go/orch/internal/errors"
 	"github.com/arhefr/Yandex-Go/orch/internal/model"
-	repo "github.com/arhefr/Yandex-Go/orch/internal/repository"
-	"github.com/arhefr/Yandex-Go/orch/internal/tools"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 )
 
-func AddExpr(ctx echo.Context) error {
-	req := new(model.Expression)
+type Service interface {
+	Get() []model.Request
+	GetByID(id string) (model.Request, bool)
+	Add(expr model.Expression) (string, error)
+	Replace(id string, req model.Request)
+}
 
+type Handler struct {
+	service Service
+}
+
+func NewHandler(service Service) Handler {
+	return Handler{service: service}
+}
+
+func (h *Handler) AddExpr(ctx echo.Context) error {
+
+	req := new(model.Expression)
 	if err := ctx.Bind(&req); err != nil {
 		log.Warn(Err.IncorrectJSON)
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.IncorrectJSON)
 	}
 
-	expr := model.NewExpr(tools.NewCryptoRand(), req)
-	repo.Exprs.Add(expr.ID, expr)
-	return ctx.JSON(http.StatusOK, struct {
-		ID string `json:"id"`
-	}{expr.ID})
+	if id, err := h.service.Add(*req); err != nil {
+		log.Warn(Err.Common)
+		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.Common)
+	} else {
+		return ctx.JSON(http.StatusOK, struct {
+			ID string `json:"id"`
+		}{id})
+	}
 }
 
-func GetIDs(ctx echo.Context) error {
-	exprs := repo.Exprs.GetValues()
+func (h *Handler) GetIDs(ctx echo.Context) error {
+	exprs := h.service.Get()
 	return ctx.JSON(http.StatusOK,
 		struct {
 			Exprs []model.Request `json:"expressions"`
 		}{exprs})
 }
 
-func GetID(ctx echo.Context) error {
-	expr, exists := repo.Exprs.Get(ctx.Param("id"))
+func (h *Handler) GetID(ctx echo.Context) error {
+	expr, exists := h.service.GetByID(ctx.Param("id"))
 	if !exists {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.IncorrectID)
 	}
@@ -48,7 +64,7 @@ func GetID(ctx echo.Context) error {
 	}{expr})
 }
 
-func CatchTask(ctx echo.Context) error {
+func (h *Handler) CatchTask(ctx echo.Context) error {
 	var task model.Response
 
 	if err := ctx.Bind(&task); err != nil {
@@ -56,42 +72,42 @@ func CatchTask(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.IncorrectJSON)
 	}
 
-	expr, _ := repo.Exprs.Get(task.ID)
-	i := model.GetIndex(expr.PostNote, task.Sub_ID)
+	req, _ := h.service.GetByID(task.ID)
+	i := model.GetIndex(req.PostNote, task.Sub_ID)
 	if i == -1 {
 		return nil
 	}
-	postNote := slices.Replace(expr.PostNote, i, i+1, model.Entity{Name: task.Result})
+	postNote := slices.Replace(req.PostNote, i, i+1, model.Entity{Name: task.Result})
 
 	if len(postNote) == 1 {
-		expr.Result = postNote[0].Name
-		expr.Status = model.StatusDone
+		req.Result = postNote[0].Name
+		req.Status = model.StatusDone
 	}
 
-	repo.Exprs.Add(expr.ID, expr)
+	h.service.Replace(req.ID, req)
 	return nil
 }
 
-func SendTask(ctx echo.Context) error {
+func (h *Handler) SendTask(ctx echo.Context) error {
 	var mu sync.RWMutex
 
 	mu.Lock()
 	defer mu.Unlock()
-	for _, expr := range repo.Exprs.GetValues() {
-		if task, err := expr.GetTask(); (expr.Status == model.StatusWait || expr.Status == model.StatusCalc) && err == nil {
-			i := model.GetIndex(expr.PostNote, task.Sub_ID)
-			repo.Exprs.Add(expr.ID, model.Request{
-				ID:       expr.ID,
+	for _, req := range h.service.Get() {
+		if task, err := req.GetTask(); (req.Status == model.StatusWait || req.Status == model.StatusCalc) && err == nil {
+			i := model.GetIndex(req.PostNote, task.Sub_ID)
+			h.service.Replace(req.ID, model.Request{
+				ID:       req.ID,
 				Status:   model.StatusCalc,
-				Result:   expr.Result,
-				PostNote: append(expr.PostNote[:i-2], expr.PostNote[i:]...),
+				Result:   req.Result,
+				PostNote: append(req.PostNote[:i-2], req.PostNote[i:]...),
 			})
 
 			return ctx.JSON(http.StatusOK, task)
 
 		} else if err != nil && err != Err.NotFoundTask {
-			repo.Exprs.Add(expr.ID, model.Request{
-				ID:     expr.ID,
+			h.service.Replace(req.ID, model.Request{
+				ID:     req.ID,
 				Status: model.StatusErr,
 				Result: fmt.Sprint(err),
 			})

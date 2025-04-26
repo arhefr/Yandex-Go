@@ -4,6 +4,8 @@ import (
 	"os"
 
 	"github.com/arhefr/Yandex-Go/orch/config"
+	"github.com/arhefr/Yandex-Go/orch/internal/repository"
+	"github.com/arhefr/Yandex-Go/orch/internal/service"
 	router "github.com/arhefr/Yandex-Go/orch/internal/transport/http"
 
 	log "github.com/sirupsen/logrus"
@@ -19,6 +21,10 @@ func init() {
 }
 
 func main() {
-	router := router.NewRouter(config.NewRouterCfg())
+	repo := repository.NewRepo()
+	service := service.NewService(repo)
+	handler := router.NewHandler(service)
+
+	router := router.NewRouter(config.NewRouterCfg(), handler)
 	router.Run()
 }

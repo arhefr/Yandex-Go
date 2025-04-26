@@ -22,14 +22,14 @@ type Router struct {
 	Echo *echo.Echo
 }
 
-func NewRouter(config *Config) Router {
+func NewRouter(config *Config, h Handler) Router {
 
 	e := echo.New()
-	e.POST(PATH_ADD, AddExpr)
-	e.GET(PATH_GET, GetIDs)
-	e.GET(PATH_GET+"/:id", GetID)
-	e.GET(PATH_TASK, SendTask)
-	e.POST(PATH_TASK, CatchTask)
+	e.POST(PATH_ADD, h.AddExpr)
+	e.GET(PATH_GET, h.GetIDs)
+	e.GET(PATH_GET+"/:id", h.GetID)
+	e.GET(PATH_TASK, h.SendTask)
+	e.POST(PATH_TASK, h.CatchTask)
 
 	return Router{Config: config, Echo: e}
 }

@@ -4,26 +4,37 @@ import (
 	"sync"
 
 	"github.com/arhefr/Yandex-Go/orch/internal/model"
+	"github.com/arhefr/Yandex-Go/orch/internal/tools"
 )
 
-var Exprs = NewSafeMap()
+var Exprs = NewRepo()
 
-type repository struct {
+type Repository struct {
 	mu sync.Mutex
 	m  map[string]model.Request
 }
 
-func NewSafeMap() *repository {
-	return &repository{m: make(map[string]model.Request), mu: sync.Mutex{}}
+func NewRepo() *Repository {
+	return &Repository{m: make(map[string]model.Request), mu: sync.Mutex{}}
 }
 
-func (r *repository) Add(key string, value model.Request) {
+func (r *Repository) Add(expr model.Expression) (string, error) {
 	r.mu.Lock()
-	r.m[key] = value
+	key := tools.NewCryptoRand()
+	req := model.NewExpr(key, &expr)
+	r.m[key] = req
+	r.mu.Unlock()
+
+	return key, nil
+}
+
+func (r *Repository) Replace(key string, req model.Request) {
+	r.mu.Lock()
+	r.m[key] = req
 	r.mu.Unlock()
 }
 
-func (r *repository) Get(key string) (model.Request, bool) {
+func (r *Repository) GetByID(key string) (model.Request, bool) {
 	r.mu.Lock()
 
 	if value, ok := r.m[key]; ok {
@@ -34,13 +45,13 @@ func (r *repository) Get(key string) (model.Request, bool) {
 	return model.Request{}, false
 }
 
-func (r *repository) Delete(key string) {
+func (r *Repository) Delete(key string) {
 	r.mu.Lock()
 	delete(r.m, key)
 	r.mu.Unlock()
 }
 
-func (r *repository) GetKeys() []string {
+func (r *Repository) GetKeys() []string {
 	var array []string
 	r.mu.Lock()
 	for value := range r.m {
@@ -50,7 +61,7 @@ func (r *repository) GetKeys() []string {
 	return array
 }
 
-func (r *repository) GetValues() []model.Request {
+func (r *Repository) Get() []model.Request {
 	var array []model.Request
 	r.mu.Lock()
 	for key := range r.m {

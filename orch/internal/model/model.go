@@ -61,6 +61,8 @@ func NewExpr(id string, request *Expression) Request {
 
 	if numsCnt-1 != opsCnt {
 		return Request{ID: id, Status: StatusErr, Result: Err.IncorrectExpr.Error()}
+	} else if numsCnt == 1 {
+		return Request{ID: id, Status: StatusDone, Result: postNote[0]}
 	}
 
 	req := Request{ID: id, Status: StatusWait, PostNote: postNoteEnt}

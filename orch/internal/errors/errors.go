@@ -13,4 +13,6 @@ var (
 	NotFoundTask  = errors.New("error no available tasks")
 
 	CannotConnect = errors.New("error cannot connect to server")
+
+	Common = errors.New("error something went wrong")
 )
