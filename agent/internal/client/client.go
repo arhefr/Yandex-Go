@@ -37,8 +37,7 @@ func Worker(tick time.Duration, url string) {
 		time.Sleep(tick)
 
 		task, err := getWork(url)
-		if err != nil && err == Err.IncorrectJSON {
-			log.Warn(err)
+		if err != nil {
 			continue
 		}
 

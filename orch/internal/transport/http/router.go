@@ -22,7 +22,7 @@ type Router struct {
 	Echo *echo.Echo
 }
 
-func NewRouter(config *Config, h Handler) Router {
+func NewRouter(config *Config, h *Handler) Router {
 
 	e := echo.New()
 	e.POST(PATH_ADD, h.AddExpr)
