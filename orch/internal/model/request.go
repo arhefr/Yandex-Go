@@ -1,6 +1,8 @@
 package model
 
 import (
+	"fmt"
+
 	parser "github.com/arhefr/MathParser"
 )
 
@@ -38,12 +40,12 @@ func NewRequest(expr Expression) (req Request) {
 	return req
 }
 
-func GetIndex(postNote []Entity, index int) int {
+func GetIndex(postNote []Entity, index int) (int, error) {
 	for i, ent := range postNote {
 		if ent.Index == index {
-			return i
+			return i, nil
 		}
 	}
 
-	return -1
+	return -1, fmt.Errorf("model: GetIndex: error missing index")
 }

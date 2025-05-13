@@ -5,7 +5,7 @@ COPY . .
 ARG CGO_ENABLED=0 \
     GOOS=linux
 
-RUN go mod tidy && go build -o ./bin/app ./cmd/main.go
+RUN go mod tidy && go build -o ./bin/app ./cmd/app/main.go
 
 FROM alpine:3.21.3
 COPY --from=builder /app/bin/app /

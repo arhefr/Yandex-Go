@@ -8,6 +8,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/arhefr/Yandex-Go/agent/config"
 	Err "github.com/arhefr/Yandex-Go/agent/internal/errors"
 	"github.com/arhefr/Yandex-Go/agent/internal/model"
 	"github.com/arhefr/Yandex-Go/agent/internal/service"
@@ -15,17 +16,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const (
-	URL = "/internal/task"
-)
-
-func RunWorkers(cfg *service.Config) {
+func RunWorkers(cfg *config.Config) {
 	cfg.WG.Add(cfg.AgentsValue)
 	for i := 1; i <= cfg.AgentsValue; i++ {
 		go func(url string) {
 			Worker(cfg.AgentPeriodicity, url)
 			cfg.WG.Done()
-		}(fmt.Sprintf("http://orch:%s%s", cfg.Port, URL))
+		}(fmt.Sprintf("http://orch:%s%s", cfg.Port, "/internal/task"))
 	}
 
 	log.Infof("%d Workers start working", runtime.NumGoroutine()-1)

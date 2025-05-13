@@ -5,18 +5,19 @@ import (
 	"os"
 	"strconv"
 
-	log "github.com/arhefr/Yandex-Go/orch/internal/logger"
-	router "github.com/arhefr/Yandex-Go/orch/internal/transport/http"
+	router "github.com/arhefr/Yandex-Go/orch/internal/transport/http/router"
 	"github.com/arhefr/Yandex-Go/orch/pkg/client/postgres"
+	log "github.com/arhefr/Yandex-Go/orch/pkg/logger"
 )
 
 type Config struct {
-	RouterConfig router.Config
-	DB           postgres.DBConfig
+	API router.Config
+	DB  postgres.DBConfig
+	Storage
 }
 
 func NewConfig(logger *log.Logger) (*Config, error) {
-	routerPort, dbHost, dbPort, dbUser, dbPassword, dbName, dbMaxAtmps, dbDelayAtmps :=
+	routerPort, dbHost, dbPort, dbUser, dbPassword, dbName, dbMaxAtmps, dbDelayAtmps, jwtKey, hashSalt :=
 		os.Getenv("PORT"),
 		os.Getenv("DB_HOST"),
 		os.Getenv("DB_PORT"),
@@ -24,11 +25,13 @@ func NewConfig(logger *log.Logger) (*Config, error) {
 		os.Getenv("DB_PASSWORD"),
 		os.Getenv("DB_NAME"),
 		os.Getenv("DB_MAX_ATMPS"),
-		os.Getenv("DB_DELAY_ATMPS_S")
+		os.Getenv("DB_DELAY_ATMPS_S"),
+		os.Getenv("JWT_KEY"),
+		os.Getenv("HASH_SALT")
 
-	logger.Info("Enviroment data: ", routerPort, dbHost, dbPort, dbUser, dbPassword, dbName, dbMaxAtmps, dbDelayAtmps)
+	logger.Info("Enviroment data: ", routerPort, dbHost, dbPort, dbUser, dbPassword, dbName, dbMaxAtmps, dbDelayAtmps, jwtKey, hashSalt)
 
-	if routerPort == "" || dbHost == "" || dbPort == "" || dbUser == "" || dbPassword == "" || dbName == "" || dbMaxAtmps == "" || dbDelayAtmps == "" {
+	if routerPort == "" || dbHost == "" || dbPort == "" || dbUser == "" || dbPassword == "" || dbName == "" || dbMaxAtmps == "" || dbDelayAtmps == "" || jwtKey == "" || hashSalt == "" {
 		return &Config{}, fmt.Errorf("config: NewConfig: error missing enviroment params")
 	}
 
@@ -39,7 +42,7 @@ func NewConfig(logger *log.Logger) (*Config, error) {
 	}
 
 	return &Config{
-		RouterConfig: router.Config{
+		API: router.Config{
 			Port: routerPort,
 		},
 		DB: postgres.DBConfig{
@@ -50,6 +53,10 @@ func NewConfig(logger *log.Logger) (*Config, error) {
 			Database:    dbName,
 			MaxAtmps:    dbMaxAtmpsInt,
 			DelayAtmpsS: dbDelayAtmpsInt,
+		},
+		Storage: Storage{
+			JWTkey:   jwtKey,
+			HashSalt: hashSalt,
 		},
 	}, nil
 }

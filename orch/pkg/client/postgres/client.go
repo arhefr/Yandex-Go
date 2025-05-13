@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	log "github.com/arhefr/Yandex-Go/orch/internal/logger"
+	log "github.com/arhefr/Yandex-Go/orch/pkg/logger"
 	repeatible "github.com/arhefr/Yandex-Go/orch/pkg/utils"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -17,16 +17,6 @@ type Client interface {
 	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
 	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 	Begin(ctx context.Context) (pgx.Tx, error)
-}
-
-type DBConfig struct {
-	Host        string
-	Port        string
-	User        string
-	Password    string
-	Database    string
-	MaxAtmps    int
-	DelayAtmpsS int
 }
 
 func NewClient(logger *log.Logger, ctx context.Context, cfg DBConfig) (pool *pgxpool.Pool, err error) {
@@ -50,6 +40,10 @@ func NewClient(logger *log.Logger, ctx context.Context, cfg DBConfig) (pool *pgx
 	}, cfg.MaxAtmps, time.Duration(cfg.DelayAtmpsS)*time.Second)
 
 	if err != nil {
+		return nil, fmt.Errorf("postgres: NewClient: %s", err)
+	}
+
+	if err := InitDB(ctx, pool); err != nil {
 		return nil, fmt.Errorf("postgres: NewClient: %s", err)
 	}
 

@@ -6,5 +6,7 @@ import (
 )
 
 func main() {
-	client.RunWorkers(config.NewServiceCfg())
+	cfg := config.NewServiceCfg()
+
+	client.RunWorkers(cfg)
 }

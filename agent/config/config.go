@@ -6,11 +6,19 @@ import (
 	"sync"
 	"time"
 
-	"github.com/arhefr/Yandex-Go/agent/internal/service"
 	log "github.com/sirupsen/logrus"
 )
 
-func NewServiceCfg() *service.Config {
+type Config struct {
+	Port string
+
+	AgentsValue      int
+	AgentPeriodicity time.Duration
+
+	WG *sync.WaitGroup
+}
+
+func NewServiceCfg() *Config {
 
 	port := os.Getenv("PORT")
 	agentsValue, err := strconv.Atoi(os.Getenv("COMPUTING_POWER"))
@@ -22,7 +30,7 @@ func NewServiceCfg() *service.Config {
 		log.Fatal("error incorrect enviroment data:", os.Getenv("AGENT_PERIODICITY_MS"))
 	}
 
-	return &service.Config{
+	return &Config{
 		Port: port,
 
 		AgentsValue:      agentsValue,

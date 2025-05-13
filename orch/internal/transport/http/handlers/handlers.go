@@ -1,36 +1,21 @@
-package router
+package handlers
 
 import (
 	"context"
 	"net/http"
 	"slices"
-	"sync"
 
 	Err "github.com/arhefr/Yandex-Go/orch/internal/errors"
 	"github.com/arhefr/Yandex-Go/orch/internal/model"
-	repo "github.com/arhefr/Yandex-Go/orch/internal/repository"
 	"github.com/labstack/echo/v4"
 )
 
-type Service interface {
-	Postgresql
+func (h *Handler) SignIn(ctx echo.Context) (err error) {
+	return nil
 }
 
-type Postgresql interface {
-	Get(ctx context.Context) ([]model.Expression, error)
-	GetByID(ctx context.Context, id string) (model.Expression, error)
-	Add(ctx context.Context, expr model.Expression) error
-	Replace(ctx context.Context, id, status, result string) error
-}
-
-type Handler struct {
-	ts      *repo.SafeMap
-	service Service
-	mu      sync.RWMutex
-}
-
-func NewHandler(service Service, ts *repo.SafeMap) Handler {
-	return Handler{service: service, mu: sync.RWMutex{}, ts: ts}
+func (h *Handler) LogIn(ctx echo.Context) (err error) {
+	return nil
 }
 
 func (h *Handler) AddExpr(ctx echo.Context) (err error) {
@@ -44,9 +29,9 @@ func (h *Handler) AddExpr(ctx echo.Context) (err error) {
 	if req.Status == model.StatusErr {
 		expr.Status = model.StatusErr
 	} else {
-		h.ts.Add(req, expr.ID)
+		h.services.AddReq(expr.ID, req)
 	}
-	if err := h.service.Add(context.TODO(), *expr); err != nil {
+	if err := h.services.AddExpr(context.TODO(), *expr); err != nil {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.Common)
 	} else {
 		return ctx.JSON(http.StatusOK, struct {
@@ -56,7 +41,7 @@ func (h *Handler) AddExpr(ctx echo.Context) (err error) {
 }
 
 func (h *Handler) GetIDs(ctx echo.Context) (err error) {
-	exprs, err := h.service.Get(context.TODO())
+	exprs, err := h.services.GetExprs(context.TODO())
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.Common)
 	}
@@ -68,7 +53,7 @@ func (h *Handler) GetIDs(ctx echo.Context) (err error) {
 }
 
 func (h *Handler) GetID(ctx echo.Context) (err error) {
-	expr, err := h.service.GetByID(context.TODO(), ctx.Param("id"))
+	expr, err := h.services.GetExprByID(context.TODO(), ctx.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.IncorrectID)
 	}
@@ -81,48 +66,53 @@ func (h *Handler) GetID(ctx echo.Context) (err error) {
 func (h *Handler) CatchTask(ctx echo.Context) error {
 	var task model.Response
 
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
 	if err := ctx.Bind(&task); err != nil {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.IncorrectJSON)
 	}
 
-	req, _ := h.ts.GetById(task.ID)
-	i := model.GetIndex(req.PostNote, task.Sub_ID)
-	if i == -1 {
+	req, _ := h.services.GetReqByID(task.ID)
+	i, err := model.GetIndex(req.PostNote, task.Sub_ID)
+	if err != nil {
 		return nil
 	}
 	postNote := slices.Replace(req.PostNote, i, i+1, model.Entity{Name: task.Result})
 
 	if len(postNote) == 1 {
 		req.Status = model.StatusDone
-		h.service.Replace(context.TODO(), req.ID, model.StatusDone, postNote[0].Name)
-		h.ts.Delete(req.ID)
+		h.services.ReplaceExpr(context.TODO(), req.ID, model.StatusDone, postNote[0].Name)
 	}
 
-	h.ts.Refresh(req.ID, *req)
+	h.services.ReplaceReq(req.ID, *req)
 	return nil
 }
 
 func (h *Handler) SendTask(ctx echo.Context) error {
-	var mu sync.RWMutex
 
-	mu.Lock()
-	defer mu.Unlock()
-	for _, req := range h.ts.Get() {
-		if task, err := req.GetTask(); (req.Status == model.StatusWait) && err == nil {
-			i := model.GetIndex(req.PostNote, task.Sub_ID)
-			h.ts.Refresh(req.ID, model.Request{
-				ID:       req.ID,
-				Status:   model.StatusWait,
-				PostNote: append(req.PostNote[:i-2], req.PostNote[i:]...),
-			})
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	for _, req := range h.services.GetReq() {
+		if task, err := req.GetTask(); err != nil && err != Err.NotFoundTask {
+
+			h.services.ReplaceExpr(context.TODO(), req.ID, model.StatusErr, "")
+			h.services.DeleteReq(req.ID)
+			return echo.NewHTTPError(http.StatusInternalServerError, Err.IncorrectExpr)
+		} else if req.Status == model.StatusDone {
+
+			h.services.DeleteReq(req.ID)
+		} else if req.Status == model.StatusWait {
+
+			i, err := model.GetIndex(req.PostNote, task.Sub_ID)
+			if err != nil {
+				return echo.NewHTTPError(http.StatusInternalServerError, Err.IncorrectExpr)
+			}
+
+			req.PostNote = append(req.PostNote[:i-2], req.PostNote[i:]...)
+			h.services.ReplaceReq(req.ID, req)
 
 			return ctx.JSON(http.StatusOK, task)
-
-		} else if err != nil && err != Err.NotFoundTask {
-			h.service.Replace(context.TODO(), req.ID, model.StatusErr, "")
-			h.ts.Delete(req.ID)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, Err.IncorrectExpr)
 		}
 	}
 

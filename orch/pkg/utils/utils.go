@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-func NewCryptoRand() string {
-	safeNum, err := crypto.Int(crypto.Reader, big.NewInt(1000000))
+func NewCryptoRand(size int64) string {
+	safeNum, err := crypto.Int(crypto.Reader, big.NewInt(size))
 	if err != nil {
 		panic(err)
 	}

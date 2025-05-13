@@ -12,5 +12,5 @@ type Expression struct {
 }
 
 func NewExpression() *Expression {
-	return &Expression{ID: repeatible.NewCryptoRand(), Status: StatusWait, Expr: "", Result: ""}
+	return &Expression{ID: repeatible.NewCryptoRand(1000000), Status: StatusWait, Expr: "", Result: ""}
 }

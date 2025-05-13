@@ -3,14 +3,9 @@ package router
 import (
 	"net/http"
 
+	"github.com/arhefr/Yandex-Go/orch/internal/transport/http/handlers"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
-)
-
-const (
-	PATH_ADD  = "/api/v1/calculate"
-	PATH_GET  = "/api/v1/expressions"
-	PATH_TASK = "/internal/task"
 )
 
 type Config struct {
@@ -22,14 +17,17 @@ type Router struct {
 	Echo *echo.Echo
 }
 
-func NewRouter(config *Config, h *Handler) Router {
+func NewRouter(config *Config, h *handlers.Handler) Router {
 
 	e := echo.New()
-	e.POST(PATH_ADD, h.AddExpr)
-	e.GET(PATH_GET, h.GetIDs)
-	e.GET(PATH_GET+"/:id", h.GetID)
-	e.GET(PATH_TASK, h.SendTask)
-	e.POST(PATH_TASK, h.CatchTask)
+	e.POST(ENDPOINT_ADD, h.AddExpr)
+	e.GET(ENDPOINT_GET, h.GetIDs)
+	e.GET(ENDPOINT_GET+"/:id", h.GetID)
+	e.GET(ENDPOINT_TASK, h.SendTask)
+	e.POST(ENDPOINT_TASK, h.CatchTask)
+
+	e.POST(ENDPOINT_SIGNIN, h.SignIn)
+	e.POST(ENDPOINT_SIGNIN, h.LogIn)
 
 	return Router{Config: config, Echo: e}
 }

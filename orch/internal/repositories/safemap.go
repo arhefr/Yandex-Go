@@ -21,13 +21,13 @@ func (r *SafeMap) Add(req model.Request, key string) {
 	r.mu.Unlock()
 }
 
-func (r *SafeMap) Refresh(key string, req model.Request) {
+func (r *SafeMap) Replace(key string, req model.Request) {
 	r.mu.Lock()
 	r.m[key] = req
 	r.mu.Unlock()
 }
 
-func (r *SafeMap) GetById(key string) (*model.Request, bool) {
+func (r *SafeMap) GetByID(key string) (*model.Request, bool) {
 	r.mu.Lock()
 
 	if value, ok := r.m[key]; ok {
