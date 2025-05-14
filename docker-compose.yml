@@ -5,9 +5,9 @@ services:
     image: postgres:latest
 
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=postgres
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-postgres}
 
     ports:
       - "5432:5432"
@@ -21,15 +21,18 @@ services:
 
     environment:
       - PORT=8080
+
       - DB_HOST=db
       - DB_PORT=5432
-      - DB_USER=postgres
-      - DB_PASSWORD=mAz0H1zm
-      - DB_NAME=postgres
-      - DB_MAX_ATMPS=5
-      - DB_DELAY_ATMPS_S=5
-      - JWT_KEY="hfahieufhdsfhashdfhefaseufhasuhefashefi"
-      - HASH_SALT="iueuqotuqowutqwurqwirwqeiruqwouerqw"
+      - DB_MAX_ATMPS=${DB_MAX_ATMPS:-5}
+      - DB_DELAY_ATMPS_S=${DB_DELAY_ATMPS_S:-3}
+
+      - DB_USER=${POSTGRES_USER:-postgres}
+      - DB_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - DB_NAME=${POSTGRES_DB:-postgres}
+
+      - JWT_KEY=${JWT_KEY:-SECRET}
+      - HASH_SALT=${HASH_SALT:-SALT}
 
     ports:
      - "8080:8080"
@@ -48,8 +51,8 @@ services:
      - "80:3030"
 
     environment:
-      - COMPUTING_POWER=3
-      - AGENT_PERIODICITY_MS=250
+      - COMPUTING_POWER=${COMPUTING_POWER:-5}
+      - AGENT_PERIODICITY_MS=${AGENT_PERIODICITY_MS:-100}
       - PORT=8080
 
     depends_on:
