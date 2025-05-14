@@ -8,6 +8,9 @@ import (
 )
 
 var build = `
+DROP TABLE expressions;
+DROP TABLE users;
+
 CREATE TABLE IF NOT EXISTS users 
 (
 id text,
@@ -17,6 +20,7 @@ password text
 
 CREATE TABLE IF NOT EXISTS expressions 
 (
+userID text,
 id text,
 status text,
 expression text,

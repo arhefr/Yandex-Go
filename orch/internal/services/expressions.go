@@ -12,8 +12,8 @@ type ServiceExpressions struct {
 }
 
 type RepositoryExpressions interface {
-	Get(ctx context.Context) ([]model.Expression, error)
-	GetByID(ctx context.Context, id string) (model.Expression, error)
+	Get(ctx context.Context, id string) ([]model.Expression, error)
+	GetByID(ctx context.Context, userID string, id string) (model.Expression, error)
 	Add(ctx context.Context, expr model.Expression) error
 	Replace(ctx context.Context, id, status, result string) error
 }
@@ -30,12 +30,12 @@ func NewServiceExpressions(db RepositoryExpressions, tr TempRepo) *ServiceExpres
 	return &ServiceExpressions{db: db, tr: tr}
 }
 
-func (se *ServiceExpressions) GetExprs(ctx context.Context) ([]model.Expression, error) {
-	return se.db.Get(ctx)
+func (se *ServiceExpressions) GetExprs(ctx context.Context, userID string) ([]model.Expression, error) {
+	return se.db.Get(ctx, userID)
 }
 
-func (se *ServiceExpressions) GetExprByID(ctx context.Context, id string) (model.Expression, error) {
-	return se.db.GetByID(ctx, id)
+func (se *ServiceExpressions) GetExprByID(ctx context.Context, userID string, id string) (model.Expression, error) {
+	return se.db.GetByID(ctx, userID, id)
 }
 
 func (se *ServiceExpressions) AddExpr(ctx context.Context, expr model.Expression) (err error) {

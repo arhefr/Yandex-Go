@@ -24,10 +24,12 @@ services:
       - DB_HOST=db
       - DB_PORT=5432
       - DB_USER=postgres
-      - DB_PASSWORD=postgres
+      - DB_PASSWORD=mAz0H1zm
       - DB_NAME=postgres
       - DB_MAX_ATMPS=5
       - DB_DELAY_ATMPS_S=5
+      - JWT_KEY="hfahieufhdsfhashdfhefaseufhasuhefashefi"
+      - HASH_SALT="iueuqotuqowutqwurqwirwqeiruqwouerqw"
 
     ports:
      - "8080:8080"

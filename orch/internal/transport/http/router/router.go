@@ -20,14 +20,18 @@ type Router struct {
 func NewRouter(config *Config, h *handlers.Handler) Router {
 
 	e := echo.New()
-	e.POST(ENDPOINT_ADD, h.AddExpr)
-	e.GET(ENDPOINT_GET, h.GetIDs)
-	e.GET(ENDPOINT_GET+"/:id", h.GetID)
+	g := e.Group("/api/v1")
+	{
+		g.POST(ENDPOINT_ADD, h.AddExpr)
+		g.GET(ENDPOINT_GET, h.GetIDs)
+		g.GET(ENDPOINT_GET+"/:id", h.GetID)
+
+		g.POST(ENDPOINT_SIGN_IN, h.SignIn)
+		g.POST(ENDPOINT_LOG_IN, h.LogIn)
+	}
+
 	e.GET(ENDPOINT_TASK, h.SendTask)
 	e.POST(ENDPOINT_TASK, h.CatchTask)
-
-	e.POST(ENDPOINT_SIGNIN, h.SignIn)
-	e.POST(ENDPOINT_SIGNIN, h.LogIn)
 
 	return Router{Config: config, Echo: e}
 }

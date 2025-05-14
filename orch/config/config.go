@@ -7,7 +7,6 @@ import (
 
 	router "github.com/arhefr/Yandex-Go/orch/internal/transport/http/router"
 	"github.com/arhefr/Yandex-Go/orch/pkg/client/postgres"
-	log "github.com/arhefr/Yandex-Go/orch/pkg/logger"
 )
 
 type Config struct {
@@ -16,7 +15,7 @@ type Config struct {
 	Storage
 }
 
-func NewConfig(logger *log.Logger) (*Config, error) {
+func NewConfig() (*Config, error) {
 	routerPort, dbHost, dbPort, dbUser, dbPassword, dbName, dbMaxAtmps, dbDelayAtmps, jwtKey, hashSalt :=
 		os.Getenv("PORT"),
 		os.Getenv("DB_HOST"),
@@ -28,8 +27,6 @@ func NewConfig(logger *log.Logger) (*Config, error) {
 		os.Getenv("DB_DELAY_ATMPS_S"),
 		os.Getenv("JWT_KEY"),
 		os.Getenv("HASH_SALT")
-
-	logger.Info("Enviroment data: ", routerPort, dbHost, dbPort, dbUser, dbPassword, dbName, dbMaxAtmps, dbDelayAtmps, jwtKey, hashSalt)
 
 	if routerPort == "" || dbHost == "" || dbPort == "" || dbUser == "" || dbPassword == "" || dbName == "" || dbMaxAtmps == "" || dbDelayAtmps == "" || jwtKey == "" || hashSalt == "" {
 		return &Config{}, fmt.Errorf("config: NewConfig: error missing enviroment params")

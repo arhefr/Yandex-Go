@@ -17,9 +17,9 @@ func NewRepositoryExpressions(ctx context.Context, db *pgxpool.Pool) *Repository
 	return &RepositoryExpressions{db: db}
 }
 
-func (r *RepositoryExpressions) Get(ctx context.Context) (exprs []model.Expression, err error) {
+func (r *RepositoryExpressions) Get(ctx context.Context, userID string) (exprs []model.Expression, err error) {
 
-	rows, err := r.db.Query(ctx, `SELECT * FROM expressions`)
+	rows, err := r.db.Query(ctx, `SELECT * FROM expressions WHERE userID=$1`, userID)
 	if err != nil {
 		return nil, fmt.Errorf("repository: Get: %s", err)
 	}
@@ -27,7 +27,7 @@ func (r *RepositoryExpressions) Get(ctx context.Context) (exprs []model.Expressi
 
 	for rows.Next() {
 		var expr model.Expression
-		if err = rows.Scan(&expr.ID, &expr.Status, &expr.Expr, &expr.Result); err != nil {
+		if err = rows.Scan(&expr.UserID, &expr.ID, &expr.Status, &expr.Expr, &expr.Result); err != nil {
 			return nil, fmt.Errorf("repository: Get: %s", err)
 		}
 		exprs = append(exprs, expr)
@@ -36,10 +36,10 @@ func (r *RepositoryExpressions) Get(ctx context.Context) (exprs []model.Expressi
 	return exprs, nil
 }
 
-func (r *RepositoryExpressions) GetByID(ctx context.Context, id string) (expr model.Expression, err error) {
+func (r *RepositoryExpressions) GetByID(ctx context.Context, userID string, id string) (expr model.Expression, err error) {
 
-	row := r.db.QueryRow(ctx, `SELECT * FROM expressions WHERE id=$1`, id)
-	if err := row.Scan(&expr.ID, &expr.Status, &expr.Expr, &expr.Result); err != nil {
+	row := r.db.QueryRow(ctx, `SELECT * FROM expressions WHERE userID=$1 AND id=$2`, userID, id)
+	if err := row.Scan(&expr.UserID, &expr.ID, &expr.Status, &expr.Expr, &expr.Result); err != nil {
 		return model.Expression{}, fmt.Errorf("repository: GetByID: %s", err)
 	}
 
@@ -49,8 +49,8 @@ func (r *RepositoryExpressions) GetByID(ctx context.Context, id string) (expr mo
 func (r *RepositoryExpressions) Add(ctx context.Context, expr model.Expression) (err error) {
 
 	if _, err := r.db.Exec(ctx, `
-	INSERT INTO expressions (id, status, expression, result)
-    VALUES ($1, $2, $3, $4)`, expr.ID, expr.Status, expr.Expr, expr.Result); err != nil {
+	INSERT INTO expressions (userID, id, status, expression, result)
+    VALUES ($1, $2, $3, $4, $5)`, expr.UserID, expr.ID, expr.Status, expr.Expr, expr.Result); err != nil {
 		return fmt.Errorf("repository: Add: %s", err)
 	}
 

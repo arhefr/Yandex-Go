@@ -21,6 +21,6 @@ type Deps struct {
 func NewServices(deps Deps) *Services {
 	return &Services{
 		NewServiceExpressions(deps.Repos.RepositoryExpressions, deps.SafeMap),
-		NewServiceUsers(deps.Repos.RepositoryUsers),
+		NewServiceUsers(deps.Repos.RepositoryUsers, deps.TokenManager, deps.PasswordHasher),
 	}
 }

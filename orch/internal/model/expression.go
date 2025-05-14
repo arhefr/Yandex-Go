@@ -1,16 +1,17 @@
 package model
 
 import (
-	repeatible "github.com/arhefr/Yandex-Go/orch/pkg/utils"
+	"github.com/google/uuid"
 )
 
 type Expression struct {
+	UserID string `json:"-"`
 	ID     string `json:"id"`
 	Status string `json:"status"`
 	Expr   string `json:"expression"`
 	Result string `json:"result"`
 }
 
-func NewExpression() *Expression {
-	return &Expression{ID: repeatible.NewCryptoRand(1000000), Status: StatusWait, Expr: "", Result: ""}
+func NewExpression(userID string) *Expression {
+	return &Expression{UserID: userID, ID: uuid.NewString(), Status: StatusWait, Expr: "", Result: ""}
 }

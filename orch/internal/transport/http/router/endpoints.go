@@ -1,9 +1,9 @@
 package router
 
 const (
-	ENDPOINT_ADD    = "/api/v1/calculate"
-	ENDPOINT_GET    = "/api/v1/expressions"
-	ENDPOINT_TASK   = "/internal/task"
-	ENDPOINT_LOGIN  = "/api/v1/register"
-	ENDPOINT_SIGNIN = "/sig-in"
+	ENDPOINT_ADD     = "/calculate"
+	ENDPOINT_GET     = "/expressions"
+	ENDPOINT_TASK    = "/internal/task"
+	ENDPOINT_SIGN_IN = "/register"
+	ENDPOINT_LOG_IN  = "/log-in"
 )

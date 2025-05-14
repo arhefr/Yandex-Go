@@ -24,7 +24,7 @@ func Run() {
 	defer logfile.Close()
 	logger := logger.NewLogger(logfile, log.TraceLevel)
 
-	cfg, err := config.NewConfig(logger)
+	cfg, err := config.NewConfig()
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -34,6 +34,7 @@ func Run() {
 		logger.Fatal(err)
 	}
 	defer db.Close()
+	postgres.InitDB(context.TODO(), db)
 
 	tokenManager := jwt.NewManager(cfg.Storage.JWTkey)
 	passwordHasher := hash.NewHasher(cfg.Storage.HashSalt)

@@ -11,16 +11,42 @@ import (
 )
 
 func (h *Handler) SignIn(ctx echo.Context) (err error) {
-	return nil
+	user := new(model.User)
+	if err := ctx.Bind(&user); err != nil || (user.Login == "" || user.Password == "") {
+		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.IncorrectJSON)
+	}
+
+	h.services.ServiceUsers.SignIn(context.TODO(), user)
+	return ctx.JSON(http.StatusOK, nil)
 }
 
 func (h *Handler) LogIn(ctx echo.Context) (err error) {
-	return nil
+	user := model.NewUser()
+	if err := ctx.Bind(&user); err != nil || (user.Login == "" || user.Password == "") {
+		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.IncorrectJSON)
+	}
+
+	token, err := h.services.LogIn(context.TODO(), user)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, Err.InvalidData)
+	}
+
+	return ctx.JSON(http.StatusOK, struct {
+		Token string `json:"token"`
+	}{token})
 }
 
 func (h *Handler) AddExpr(ctx echo.Context) (err error) {
+	auth := ctx.Request().Header.Get("Authorization")
+	if len(auth) < len("Bearer ") {
+		return echo.NewHTTPError(http.StatusNetworkAuthenticationRequired, Err.NotAuthorized)
+	}
+	user, err := h.services.ParseJWT(auth[len("Bearer "):])
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNetworkAuthenticationRequired, Err.NotAuthorized)
+	}
 
-	expr := model.NewExpression()
+	expr := model.NewExpression(user.ID)
 	if err := ctx.Bind(&expr); err != nil {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.IncorrectJSON)
 	}
@@ -32,7 +58,7 @@ func (h *Handler) AddExpr(ctx echo.Context) (err error) {
 		h.services.AddReq(expr.ID, req)
 	}
 	if err := h.services.AddExpr(context.TODO(), *expr); err != nil {
-		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.Common)
+		return echo.NewHTTPError(http.StatusInternalServerError, Err.Common)
 	} else {
 		return ctx.JSON(http.StatusOK, struct {
 			ID string `json:"id"`
@@ -41,7 +67,16 @@ func (h *Handler) AddExpr(ctx echo.Context) (err error) {
 }
 
 func (h *Handler) GetIDs(ctx echo.Context) (err error) {
-	exprs, err := h.services.GetExprs(context.TODO())
+	auth := ctx.Request().Header.Get("Authorization")
+	if len(auth) < len("Bearer ") {
+		return echo.NewHTTPError(http.StatusNetworkAuthenticationRequired, Err.NotAuthorized)
+	}
+	user, err := h.services.ParseJWT(auth[len("Bearer "):])
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNetworkAuthenticationRequired, Err.NotAuthorized)
+	}
+
+	exprs, err := h.services.GetExprs(context.TODO(), user.ID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.Common)
 	}
@@ -53,7 +88,16 @@ func (h *Handler) GetIDs(ctx echo.Context) (err error) {
 }
 
 func (h *Handler) GetID(ctx echo.Context) (err error) {
-	expr, err := h.services.GetExprByID(context.TODO(), ctx.Param("id"))
+	auth := ctx.Request().Header.Get("Authorization")
+	if len(auth) < len("Bearer ") {
+		return echo.NewHTTPError(http.StatusNetworkAuthenticationRequired, Err.NotAuthorized)
+	}
+	user, err := h.services.ParseJWT(auth[len("Bearer "):])
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNetworkAuthenticationRequired, Err.NotAuthorized)
+	}
+
+	expr, err := h.services.GetExprByID(context.TODO(), user.ID, ctx.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.IncorrectID)
 	}
