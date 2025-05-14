@@ -8,9 +8,6 @@ import (
 )
 
 var build = `
-DROP TABLE expressions;
-DROP TABLE users;
-
 CREATE TABLE IF NOT EXISTS users 
 (
 id text,
