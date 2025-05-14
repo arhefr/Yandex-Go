@@ -82,3 +82,6 @@ curl --location 'localhost:8080/api/v1/expressions/<UUID>' \
 - 422 StatusUnprocessableEntity ```{"message": "error incorrect JSON"}``` некорректный JSON
 - 500 InternalServerError ```{"message": "error invalid data"}``` непредвиденная ошибка на сервере
 - 511 NetworkAuthenticationRequired ```{"message": "error not authorized"}``` отсутсвие или некорректность JWT токена
+
+## Обратная связь:
+[TG](https://t.me/arhefr)
