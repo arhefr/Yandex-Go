@@ -17,7 +17,8 @@ type ServiceUsers struct {
 
 type RepositoryUsers interface {
 	SignIn(ctx context.Context, user *model.User) (err error)
-	Check(ctx context.Context, user *model.User) bool
+	ParseID(ctx context.Context, user *model.User) (*model.User, error)
+	Check(ctx context.Context, login string) bool
 }
 
 func NewServiceUsers(db RepositoryUsers, tm *jwt.Manager, ph *hash.Hasher) *ServiceUsers {
@@ -26,12 +27,17 @@ func NewServiceUsers(db RepositoryUsers, tm *jwt.Manager, ph *hash.Hasher) *Serv
 
 func (su *ServiceUsers) SignIn(ctx context.Context, user *model.User) (err error) {
 	user.Password = su.ph.Hash(user.Password)
+	fmt.Println(user)
+	if exists := su.db.Check(ctx, user.Login); exists {
+		return fmt.Errorf("error login already exists")
+	}
 	return su.db.SignIn(ctx, user)
 }
 
 func (su *ServiceUsers) LogIn(ctx context.Context, user *model.User) (jwt string, err error) {
 	user.Password = su.ph.Hash(user.Password)
-	if exists := su.db.Check(ctx, user); exists {
+	if user, err := su.db.ParseID(ctx, user); err != nil {
+
 		token, err := su.tm.NewJWT(user.Login, user.ID)
 		if err != nil {
 			return "", err

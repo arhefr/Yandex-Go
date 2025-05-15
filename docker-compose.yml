@@ -6,13 +6,11 @@ services:
 
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-mAz0H1zm}
       - POSTGRES_DB=${POSTGRES_DB:-postgres}
 
     ports:
       - "5432:5432"
-
-    restart: always
 
   orch:
     container_name: orchestrator
@@ -20,7 +18,7 @@ services:
     build: ./orch
 
     environment:
-      - PORT=8080
+      - PORT=${PORT:-8080}
 
       - DB_HOST=db
       - DB_PORT=5432
@@ -35,12 +33,10 @@ services:
       - HASH_SALT=${HASH_SALT:-SALT}
 
     ports:
-     - "8080:8080"
+     - "${PORT:-8080}:${PORT:-8080}"
 
     depends_on:
      - postgres
-
-    restart: always
 
   agent:
     container_name: agent
@@ -53,7 +49,7 @@ services:
     environment:
       - COMPUTING_POWER=${COMPUTING_POWER:-5}
       - AGENT_PERIODICITY_MS=${AGENT_PERIODICITY_MS:-100}
-      - PORT=8080
+      - PORT=${PORT:-8080}
 
     depends_on:
      - orch

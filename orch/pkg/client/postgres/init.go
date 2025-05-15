@@ -8,20 +8,20 @@ import (
 )
 
 var build = `
-DROP TABLE expressions;
-DROP TABLE users;
+DROP TABLE IF EXISTS expressions;
+DROP TABLE IF EXISTS users;
 
 CREATE TABLE IF NOT EXISTS users 
 (
 id text,
-login text,
+login text UNIQUE,
 password text
 );
 
 CREATE TABLE IF NOT EXISTS expressions 
 (
 userID text,
-id text,
+id text PRIMARY KEY,
 status text,
 expression text,
 result text

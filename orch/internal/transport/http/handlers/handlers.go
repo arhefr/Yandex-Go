@@ -11,24 +11,26 @@ import (
 )
 
 func (h *Handler) SignIn(ctx echo.Context) (err error) {
-	user := new(model.User)
+	user := model.NewUser()
 	if err := ctx.Bind(&user); err != nil || (user.Login == "" || user.Password == "") {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.IncorrectJSON)
 	}
 
-	h.services.ServiceUsers.SignIn(context.TODO(), user)
+	if err := h.services.ServiceUsers.SignIn(context.TODO(), user); err != nil {
+		echo.NewHTTPError(http.StatusUnprocessableEntity, Err.LoginAlreadyExists)
+	}
 	return ctx.JSON(http.StatusOK, nil)
 }
 
 func (h *Handler) LogIn(ctx echo.Context) (err error) {
-	user := model.NewUser()
+	user := new(model.User)
 	if err := ctx.Bind(&user); err != nil || (user.Login == "" || user.Password == "") {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.IncorrectJSON)
 	}
 
 	token, err := h.services.LogIn(context.TODO(), user)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, Err.InvalidData)
+		return echo.NewHTTPError(http.StatusInternalServerError, Err.IncorrectAuth)
 	}
 
 	return ctx.JSON(http.StatusOK, struct {
@@ -58,7 +60,7 @@ func (h *Handler) AddExpr(ctx echo.Context) (err error) {
 		h.services.AddReq(expr.ID, req)
 	}
 	if err := h.services.AddExpr(context.TODO(), *expr); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, Err.Common)
+		return echo.NewHTTPError(http.StatusInternalServerError, Err.InternalServer)
 	} else {
 		return ctx.JSON(http.StatusOK, struct {
 			ID string `json:"id"`
@@ -78,7 +80,7 @@ func (h *Handler) GetIDs(ctx echo.Context) (err error) {
 
 	exprs, err := h.services.GetExprs(context.TODO(), user.ID)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.Common)
+		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.InternalServer)
 	}
 
 	return ctx.JSON(http.StatusOK,
