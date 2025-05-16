@@ -8,7 +8,7 @@
 ## Установка:
 Установите [Git](https://git-scm.com) если у вас его нет.
 ```
-git clone github.com/arhefr/Yandex-Go
+git clone https://github.com/arhefr/Yandex-Go
 ```
 ## Инструкция:
 ### Конфигурация:
