@@ -20,6 +20,7 @@ docker compose up
 ```
 
 ## Эндпоиты:
+Каждый эндпоинт возвращает статус код 200, если в запросе возникла ошибка, статус код и ошибка возвращается ввиде JSON.
 ### **POST localhost:8080/api/v1/register** 
 Регистрирует нового пользователя.
 ``` curl
@@ -30,9 +31,22 @@ curl --location 'localhost:8080/api/v1/register' \
     "password": "<ПАРОЛЬ>"
 }'
 ```
-- 200 OK ```nil```
-- 422 StatusUnprocessableEntity ```{"message": "error incorrect JSON"}``` некорректный JSON
-- 500 InternalServerError ```{"message": "error invalid data"}``` непредвиденная ошибка на сервере
+- 200 OK ```nil``` ок.
+  
+- 200 StatusUnprocessableEntity ```{
+    "status": 422,
+    "message": "error wrong JSON"
+}``` некорректный JSON.
+
+- 200 StatusUnprocessableEntity ```{
+    "status": 422,
+    "message": "error password must contain 8 characters or more and login must contain 3 characters or more"
+}``` пароль должен содержать минимум 8 символов, а логин минимум 3.
+
+- 200 InternalServerError ```{
+    "status": 500,
+    "message": "error something went wrong"
+}``` непредвиденная ошибка на сервере.
   
 ### **POST localhost:8080/api/v1/log-in**
 Вход в пользователя, возвращает JWT токен.
