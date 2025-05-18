@@ -13,5 +13,5 @@ type Expression struct {
 }
 
 func NewExpression(userID string) *Expression {
-	return &Expression{UserID: userID, ID: uuid.NewString(), Status: StatusWait, Expr: "", Result: ""}
+	return &Expression{UserID: userID, ID: uuid.NewString(), Status: ExprStatusWait, Expr: "", Result: ""}
 }

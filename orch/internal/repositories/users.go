@@ -6,7 +6,6 @@ import (
 
 	"github.com/arhefr/Yandex-Go/orch/internal/model"
 	"github.com/arhefr/Yandex-Go/orch/pkg/client/postgres"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -23,31 +22,38 @@ func (r *RepositoryUsers) SignIn(ctx context.Context, user *model.User) (err err
 	if _, err := r.db.Exec(ctx, `
 	INSERT INTO users (id, login, password)
     VALUES ($1, $2, $3)`, user.ID, user.Login, user.Password); err != nil {
-		return fmt.Errorf("error internal server")
+		return fmt.Errorf("repository: SignIn: %s", err)
 	}
 
 	return nil
 }
 
-func (r *RepositoryUsers) ParseID(ctx context.Context, user *model.User) (*model.User, error) {
+func (r *RepositoryUsers) GetUserID(ctx context.Context, user *model.User) (string, error) {
+	var exists bool
 
-	row := r.db.QueryRow(ctx, `SELECT * FROM users WHERE login=$1 AND password=$2`, user.Login, user.Password)
-	if err := row.Scan(&user.ID, &user.Login, &user.Password); err == pgx.ErrNoRows {
-		return nil, fmt.Errorf("error internal server")
+	row := r.db.QueryRow(ctx, `SELECT EXISTS(SELECT * FROM users WHERE login=$1 AND password=$2)`, user.Login, user.Password)
+	if err := row.Scan(&exists); err != nil {
+		return "", fmt.Errorf("repository: GetUserID: %s", err)
 	}
 
-	return user, nil
+	if !exists {
+		return "", fmt.Errorf("repository: GetUserID: %s", "wrong password")
+	}
+
+	row = r.db.QueryRow(ctx, `SELECT * FROM users WHERE login=$1 AND password=$2`, user.Login, user.Password)
+	if err := row.Scan(&user.ID, &user.Login, &user.Password); err != nil {
+		return "", fmt.Errorf("repository: GetUserID: %s", err)
+	}
+
+	return user.ID, nil
 }
 
-func (r *RepositoryUsers) Check(ctx context.Context, login string) bool {
-	var tmp interface{}
+func (r *RepositoryUsers) Exists(ctx context.Context, user *model.User) (exists bool, err error) {
 
-	row := r.db.QueryRow(ctx, `SELECT * FROM users WHERE login=$1`, login)
-	if err := row.Scan(&tmp); err != nil {
-		fmt.Println("tmp", tmp)
-		return false
+	row := r.db.QueryRow(ctx, `SELECT EXISTS(SELECT * FROM users WHERE login=$1)`, user.Login)
+	if err := row.Scan(&exists); err != nil {
+		return exists, fmt.Errorf("repository: Exists: %s", err)
 	}
 
-	fmt.Println("tmp", tmp)
-	return true
+	return exists, nil
 }

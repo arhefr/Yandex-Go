@@ -19,10 +19,9 @@ func NewManager(key string) *Manager {
 	return &Manager{key: key}
 }
 
-func (m *Manager) NewJWT(login string, id string) (string, error) {
+func (m *Manager) NewJWT(uuid string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":    id,
-		"login": login,
+		"uuid": uuid,
 	})
 	return token.SignedString([]byte(m.key))
 }

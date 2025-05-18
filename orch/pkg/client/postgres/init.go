@@ -7,24 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var build = `
-CREATE TABLE IF NOT EXISTS users 
-(
-id text,
-login text UNIQUE,
-password text
-);
-
-CREATE TABLE IF NOT EXISTS expressions 
-(
-userID text,
-id text PRIMARY KEY,
-status text,
-expression text,
-result text
-);`
-
-func InitDB(ctx context.Context, pool *pgxpool.Pool) error {
+func InitDB(ctx context.Context, pool *pgxpool.Pool, build string) error {
 	if _, err := pool.Exec(ctx, build); err != nil {
 		return fmt.Errorf("postgres: InitDB: %s", err)
 	}

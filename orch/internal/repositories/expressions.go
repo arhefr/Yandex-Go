@@ -59,7 +59,7 @@ func (r *RepositoryExpressions) Add(ctx context.Context, expr model.Expression) 
 
 func (r *RepositoryExpressions) Replace(ctx context.Context, id, status, result string) error {
 
-	if _, err := r.db.Exec(ctx, `UPDATE expressions SET result=$1, status=$2 WHERE id=$3`, result, model.StatusDone, id); err != nil {
+	if _, err := r.db.Exec(ctx, `UPDATE expressions SET result=$1, status=$2 WHERE id=$3`, result, status, id); err != nil {
 		return fmt.Errorf("repository: Replace: %s", err)
 	}
 

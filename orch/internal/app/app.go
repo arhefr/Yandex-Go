@@ -29,12 +29,11 @@ func Run() {
 		logger.Fatal(err)
 	}
 
-	db, err := postgres.NewClient(logger, context.TODO(), cfg.DB)
+	db, err := postgres.NewClient(logger, context.TODO(), cfg.DB, repository.Build)
 	if err != nil {
 		logger.Fatal(err)
 	}
 	defer db.Close()
-	postgres.InitDB(context.TODO(), db)
 
 	tokenManager := jwt.NewManager(cfg.Storage.JWTkey)
 	passwordHasher := hash.NewHasher(cfg.Storage.HashSalt)

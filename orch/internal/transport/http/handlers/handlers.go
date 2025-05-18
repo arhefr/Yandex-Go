@@ -12,28 +12,50 @@ import (
 
 func (h *Handler) SignIn(ctx echo.Context) (err error) {
 	user := model.NewUser()
-	if err := ctx.Bind(&user); err != nil || (user.Login == "" || user.Password == "") {
-		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.IncorrectJSON)
+	if err := ctx.Bind(&user); err != nil {
+		return SendJSON(ctx, ResponseWrongJSON)
+	}
+
+	if !h.services.ServiceUsers.CheckArgs(user) {
+		return SendJSON(ctx, ResponseBadAuth)
+	}
+
+	if exists, err := h.services.ServiceUsers.Exists(context.TODO(), user); err != nil {
+		return SendJSON(ctx, ResponseInternalError)
+	} else if exists {
+		return SendJSON(ctx, ResponseLoginExists)
 	}
 
 	if err := h.services.ServiceUsers.SignIn(context.TODO(), user); err != nil {
-		echo.NewHTTPError(http.StatusUnprocessableEntity, Err.LoginAlreadyExists)
+		return SendJSON(ctx, ResponseInternalError)
 	}
-	return ctx.JSON(http.StatusOK, nil)
+
+	return SendJSON(ctx, ReponseOK)
 }
 
 func (h *Handler) LogIn(ctx echo.Context) (err error) {
 	user := new(model.User)
-	if err := ctx.Bind(&user); err != nil || (user.Login == "" || user.Password == "") {
-		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.IncorrectJSON)
+	if err := ctx.Bind(&user); err != nil {
+		return SendJSON(ctx, ResponseWrongJSON)
 	}
 
-	token, err := h.services.LogIn(context.TODO(), user)
+	if exists, err := h.services.ServiceUsers.Exists(context.TODO(), user); err != nil {
+		return SendJSON(ctx, ResponseInternalError)
+	} else if !exists {
+		return SendJSON(ctx, ResponseWrongLogin)
+	}
+
+	id, err := h.services.ServiceUsers.GetUserID(context.TODO(), user)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, Err.IncorrectAuth)
+		return SendJSON(ctx, ResponseWrongPassword)
 	}
 
-	return ctx.JSON(http.StatusOK, struct {
+	token, err := h.services.ServiceUsers.GetJWT(id)
+	if err != nil {
+		return SendJSON(ctx, ResponseInternalError)
+	}
+
+	return SendJSON(ctx, struct {
 		Token string `json:"token"`
 	}{token})
 }
@@ -41,28 +63,28 @@ func (h *Handler) LogIn(ctx echo.Context) (err error) {
 func (h *Handler) AddExpr(ctx echo.Context) (err error) {
 	auth := ctx.Request().Header.Get("Authorization")
 	if len(auth) < len("Bearer ") {
-		return echo.NewHTTPError(http.StatusNetworkAuthenticationRequired, Err.NotAuthorized)
+		return SendJSON(ctx, ResponseRequiredAuth)
 	}
 	user, err := h.services.ParseJWT(auth[len("Bearer "):])
 	if err != nil {
-		return echo.NewHTTPError(http.StatusNetworkAuthenticationRequired, Err.NotAuthorized)
+		return SendJSON(ctx, ResponseWrongJWT)
 	}
 
 	expr := model.NewExpression(user.ID)
 	if err := ctx.Bind(&expr); err != nil {
-		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.IncorrectJSON)
+		return SendJSON(ctx, ResponseWrongJSON)
 	}
 
 	req := model.NewRequest(*expr)
-	if req.Status == model.StatusErr {
-		expr.Status = model.StatusErr
+	if req.Status == model.ExprStatusErr {
+		expr.Status = model.ExprStatusErr
 	} else {
 		h.services.AddReq(expr.ID, req)
 	}
 	if err := h.services.AddExpr(context.TODO(), *expr); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, Err.InternalServer)
+		return SendJSON(ctx, ResponseInternalError)
 	} else {
-		return ctx.JSON(http.StatusOK, struct {
+		return SendJSON(ctx, struct {
 			ID string `json:"id"`
 		}{expr.ID})
 	}
@@ -71,40 +93,39 @@ func (h *Handler) AddExpr(ctx echo.Context) (err error) {
 func (h *Handler) GetIDs(ctx echo.Context) (err error) {
 	auth := ctx.Request().Header.Get("Authorization")
 	if len(auth) < len("Bearer ") {
-		return echo.NewHTTPError(http.StatusNetworkAuthenticationRequired, Err.NotAuthorized)
+		return SendJSON(ctx, ResponseRequiredAuth)
 	}
 	user, err := h.services.ParseJWT(auth[len("Bearer "):])
 	if err != nil {
-		return echo.NewHTTPError(http.StatusNetworkAuthenticationRequired, Err.NotAuthorized)
+		return SendJSON(ctx, ResponseWrongJWT)
 	}
 
 	exprs, err := h.services.GetExprs(context.TODO(), user.ID)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.InternalServer)
+		return SendJSON(ctx, ResponseInternalError)
 	}
 
-	return ctx.JSON(http.StatusOK,
-		struct {
-			Exprs []model.Expression `json:"expressions"`
-		}{exprs})
+	return SendJSON(ctx, struct {
+		Exprs []model.Expression `json:"expressions"`
+	}{exprs})
 }
 
 func (h *Handler) GetID(ctx echo.Context) (err error) {
 	auth := ctx.Request().Header.Get("Authorization")
 	if len(auth) < len("Bearer ") {
-		return echo.NewHTTPError(http.StatusNetworkAuthenticationRequired, Err.NotAuthorized)
+		return SendJSON(ctx, ResponseRequiredAuth)
 	}
 	user, err := h.services.ParseJWT(auth[len("Bearer "):])
 	if err != nil {
-		return echo.NewHTTPError(http.StatusNetworkAuthenticationRequired, Err.NotAuthorized)
+		return SendJSON(ctx, ResponseWrongJWT)
 	}
 
 	expr, err := h.services.GetExprByID(context.TODO(), user.ID, ctx.Param("id"))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.IncorrectID)
+		return SendJSON(ctx, ResponseWrongID)
 	}
 
-	return ctx.JSON(http.StatusOK, struct {
+	return SendJSON(ctx, struct {
 		Expr model.Expression `json:"expression"`
 	}{expr})
 }
@@ -127,8 +148,8 @@ func (h *Handler) CatchTask(ctx echo.Context) error {
 	postNote := slices.Replace(req.PostNote, i, i+1, model.Entity{Name: task.Result})
 
 	if len(postNote) == 1 {
-		req.Status = model.StatusDone
-		h.services.ReplaceExpr(context.TODO(), req.ID, model.StatusDone, postNote[0].Name)
+		req.Status = model.ExprStatusDone
+		h.services.ReplaceExpr(context.TODO(), req.ID, model.ExprStatusDone, postNote[0].Name)
 	}
 
 	h.services.ReplaceReq(req.ID, *req)
@@ -142,13 +163,13 @@ func (h *Handler) SendTask(ctx echo.Context) error {
 	for _, req := range h.services.GetReq() {
 		if task, err := req.GetTask(); err != nil && err != Err.NotFoundTask {
 
-			h.services.ReplaceExpr(context.TODO(), req.ID, model.StatusErr, "")
+			h.services.ReplaceExpr(context.TODO(), req.ID, model.ExprStatusDone, "")
 			h.services.DeleteReq(req.ID)
 			return echo.NewHTTPError(http.StatusInternalServerError, Err.IncorrectExpr)
-		} else if req.Status == model.StatusDone {
+		} else if req.Status == model.ExprStatusDone {
 
 			h.services.DeleteReq(req.ID)
-		} else if req.Status == model.StatusWait {
+		} else if req.Status == model.ExprStatusWait {
 
 			i, err := model.GetIndex(req.PostNote, task.Sub_ID)
 			if err != nil {

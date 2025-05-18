@@ -33,10 +33,10 @@ func NewRequest(expr Expression) (req Request) {
 	}
 
 	if numsCnt-1 != opsCnt || numsCnt == 1 {
-		return Request{ID: expr.ID, Status: StatusErr}
+		return Request{ID: expr.ID, Status: ExprStatusErr}
 	}
 
-	req = Request{ID: expr.ID, Status: StatusWait, PostNote: postNoteEnt}
+	req = Request{ID: expr.ID, Status: ExprStatusWait, PostNote: postNoteEnt}
 	return req
 }
 

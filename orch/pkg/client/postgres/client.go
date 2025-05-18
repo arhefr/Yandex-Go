@@ -19,7 +19,7 @@ type Client interface {
 	Begin(ctx context.Context) (pgx.Tx, error)
 }
 
-func NewClient(logger *log.Logger, ctx context.Context, cfg DBConfig) (pool *pgxpool.Pool, err error) {
+func NewClient(logger *log.Logger, ctx context.Context, cfg DBConfig, build string) (pool *pgxpool.Pool, err error) {
 	time.Sleep(3 * time.Second)
 
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
@@ -43,7 +43,7 @@ func NewClient(logger *log.Logger, ctx context.Context, cfg DBConfig) (pool *pgx
 		return nil, fmt.Errorf("postgres: NewClient: %s", err)
 	}
 
-	if err := InitDB(ctx, pool); err != nil {
+	if err := InitDB(ctx, pool, build); err != nil {
 		return nil, fmt.Errorf("postgres: NewClient: %s", err)
 	}
 

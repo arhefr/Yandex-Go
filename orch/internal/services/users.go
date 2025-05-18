@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/arhefr/Yandex-Go/orch/internal/model"
 	"github.com/arhefr/Yandex-Go/orch/pkg/client/hash"
@@ -17,36 +16,38 @@ type ServiceUsers struct {
 
 type RepositoryUsers interface {
 	SignIn(ctx context.Context, user *model.User) (err error)
-	ParseID(ctx context.Context, user *model.User) (*model.User, error)
-	Check(ctx context.Context, login string) bool
+	GetUserID(ctx context.Context, user *model.User) (string, error)
+	Exists(ctx context.Context, user *model.User) (bool, error)
 }
 
 func NewServiceUsers(db RepositoryUsers, tm *jwt.Manager, ph *hash.Hasher) *ServiceUsers {
 	return &ServiceUsers{db: db, tm: tm, ph: ph}
 }
 
+func (su *ServiceUsers) Exists(ctx context.Context, user *model.User) (bool, error) {
+	return su.db.Exists(ctx, user)
+}
+
+func (su *ServiceUsers) CheckArgs(user *model.User) bool {
+	if len(user.Login) < 3 || len(user.Password) < 8 {
+		return false
+	}
+
+	return true
+}
+
 func (su *ServiceUsers) SignIn(ctx context.Context, user *model.User) (err error) {
 	user.Password = su.ph.Hash(user.Password)
-	fmt.Println(user)
-	if exists := su.db.Check(ctx, user.Login); exists {
-		return fmt.Errorf("error login already exists")
-	}
 	return su.db.SignIn(ctx, user)
 }
 
-func (su *ServiceUsers) LogIn(ctx context.Context, user *model.User) (jwt string, err error) {
+func (su *ServiceUsers) GetUserID(ctx context.Context, user *model.User) (string, error) {
 	user.Password = su.ph.Hash(user.Password)
-	if user, err := su.db.ParseID(ctx, user); err != nil {
+	return su.db.GetUserID(ctx, user)
+}
 
-		token, err := su.tm.NewJWT(user.Login, user.ID)
-		if err != nil {
-			return "", err
-		}
-
-		return token, nil
-	}
-
-	return "", fmt.Errorf("services: LogIn: %s", "error inccorrect data")
+func (su *ServiceUsers) GetJWT(uuid string) (string, error) {
+	return su.tm.NewJWT(uuid)
 }
 
 func (su *ServiceUsers) ParseJWT(jwt string) (user *model.User, err error) {
@@ -55,5 +56,5 @@ func (su *ServiceUsers) ParseJWT(jwt string) (user *model.User, err error) {
 		return nil, err
 	}
 
-	return &model.User{ID: claims["id"].(string), Login: claims["login"].(string)}, nil
+	return &model.User{ID: claims["uuid"].(string)}, nil
 }

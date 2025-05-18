@@ -5,6 +5,7 @@ import (
 )
 
 var (
+	BadAuth            = errors.New("error bad login or password")
 	LoginAlreadyExists = errors.New("error login already exists")
 	IncorrectAuth      = errors.New("error incorrect login or password")
 	IncorrectID        = errors.New("error incorrect id expr")
