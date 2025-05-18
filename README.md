@@ -20,6 +20,7 @@ docker compose up
 ```
 
 ## Эндпоиты:
+Каждый эндпоинт возвращает статус код 200, если в запросе возникла ошибка, статус код и ошибка возвращается ввиде JSON.
 ### **POST localhost:8080/api/v1/register** 
 Регистрирует нового пользователя.
 ``` curl
@@ -30,9 +31,22 @@ curl --location 'localhost:8080/api/v1/register' \
     "password": "<ПАРОЛЬ>"
 }'
 ```
-- 200 OK ```nil```
-- 422 StatusUnprocessableEntity ```{"message": "error incorrect JSON"}``` некорректный JSON
-- 500 InternalServerError ```{"message": "error invalid data"}``` непредвиденная ошибка на сервере
+- 200 OK ```nil``` ок.
+  
+- 200 StatusUnprocessableEntity ```{
+    "status": 422,
+    "message": "error wrong JSON"
+}``` некорректный JSON.
+
+- 200 StatusUnprocessableEntity ```{
+    "status": 422,
+    "message": "error password must contain 8 characters or more and login must contain 3 characters or more"
+}``` пароль должен содержать минимум 8 символов, а логин минимум 3.
+
+- 200 InternalServerError ```{
+    "status": 500,
+    "message": "error something went wrong"
+}``` непредвиденная ошибка на сервере.
   
 ### **POST localhost:8080/api/v1/log-in**
 Вход в пользователя, возвращает JWT токен.
@@ -44,44 +58,120 @@ curl --location 'localhost:8080/api/v1/log-in' \
     "password": "<ПАРОЛЬ>"
 }'
 ```
-- 200 OK ```{"token": "<JWT>"}```
-- 422 StatusUnprocessableEntity ```{"message": "error incorrect JSON"}``` некорректный JSON
-- 500 InternalServerError ```{"message": "error invalid data"}``` непредвиденная ошибка на сервере
+- 200 OK ```{
+  "token": "<JWT>"
+}``` ок.
   
-### **AUTHENTICATION POST localhost:8080/api/v1/calculate**
+- 200 StatusUnprocessableEntity ```{
+    "status": 422,
+    "message": "error wrong JSON"
+}``` некорректный JSON.
+
+- 200 StatusUnprocessableEntity ```{
+    "status": 422,
+    "message": "error login not exists"
+}``` несуществующий логин.
+
+- 200 StatusUnprocessableEntity ```{
+    "status": 422,
+    "message": "error wrong password"
+}``` неверный пароль.
+
+- 200 InternalServerError ```{
+    "status": 500,
+    "message": "error something went wrong"
+}``` непредвиденная ошибка на сервере.
+  
+### **AUTH POST localhost:8080/api/v1/calculate**
 Отправляет на сервер запрос с математическим выражением, возвращает UUID запроса.
 ``` curl
 curl --location 'localhost:8080/api/v1/calculate' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer <JWT>' \
 --data '{
-    "expression": "<ПРИМЕР>"
+    "expression": "<EXPRESSION>"
 }'
 ```
-- 200 OK ```{"id": "UUID"}```
-- 422 StatusUnprocessableEntity ```{"message": "error incorrect JSON"}``` некорректный JSON
-- 500 InternalServerError ```{"message": "error invalid data"}``` непредвиденная ошибка на сервере
-- 511 NetworkAuthenticationRequired ```{"message": "error not authorized"}``` отсутсвие или некорректность JWT токена
+
+- 200 OK ```{
+  "id": "<UUID>"
+}```
+
+- 200 Unauthorized ```{
+    "status": 401,
+    "message": "error authentication"
+}``` требуется авторизация.
+
+- 200 StatusUnprocessableEntity ```{
+    "status": 422,
+    "message": "error wrong JSON"
+}``` некорректный JSON.
+
+- 200 StatusUnprocessableEntity ```{
+    "status": 422,
+    "message": "error wrong JWT token"
+}``` некорректный JWT.
+
+- 200 InternalServerError ```{
+    "status": 500,
+    "message": "error something went wrong"
+}``` непредвиденная ошибка на сервере.
   
-### **AUTHENTICATION GET localhost:8080/api/v1/expressions**
+### **AUTH GET localhost:8080/api/v1/expressions**
 ``` curl
 curl --location 'localhost:8080/api/v1/expressions' \
 --header 'Authorization: Bearer <JWT>'
 ```
-- 200 OK ```{"expressions": <ПРИМЕРЫ>}```
-- 422 StatusUnprocessableEntity ```{"message": "error incorrect JSON"}``` некорректный JSON
-- 500 InternalServerError ```{"message": "error invalid data"}``` непредвиденная ошибка на сервере
-- 511 NetworkAuthenticationRequired ```{"message": "error not authorized"}``` отсутсвие или некорректность JWT токена
+
+- 200 OK ```{
+  "expressions": <EXPRESSIONS>
+}```
+
+- 200 Unauthorized ```{
+    "status": 401,
+    "message": "error authentication"
+}``` требуется авторизация.
+
+- 200 StatusUnprocessableEntity ```{
+    "status": 422,
+    "message": "error wrong JSON"
+}``` некорректный JSON.
+
+- 200 InternalServerError ```{
+    "status": 500,
+    "message": "error something went wrong"
+}``` непредвиденная ошибка на сервере.
+
   
-### **AUTHENTICATION GET localhost:8080/api/v1/expressions/UUID** 
+### **AUTH GET localhost:8080/api/v1/expressions/UUID** 
 ``` curl
 curl --location 'localhost:8080/api/v1/expressions/<UUID>' \
 --header 'Authorization: Bearer <JWT>'
 ```
-- 200 OK ```{"expression": <ПРИМЕР>}```
-- 422 StatusUnprocessableEntity ```{"message": "error incorrect JSON"}``` некорректный JSON
-- 500 InternalServerError ```{"message": "error invalid data"}``` непредвиденная ошибка на сервере
-- 511 NetworkAuthenticationRequired ```{"message": "error not authorized"}``` отсутсвие или некорректность JWT токена
+
+- 200 OK ```{
+  "expression": <EXPRESSION>
+}```
+
+- 200 Unauthorized ```{
+    "status": 401,
+    "message": "error authentication"
+}``` требуется авторизация.
+
+- 200 StatusUnprocessableEntity ```{
+    "status": 422,
+    "message": "error wrong JSON"
+}``` некорректный JSON.
+
+- 200 StatusUnprocessableEntity ```{
+    "status": 422,
+    "message": "error wrong uuid"
+}``` некорректный UUID выражения.
+
+- 200 InternalServerError ```{
+    "status": 500,
+    "message": "error something went wrong"
+}``` непредвиденная ошибка на сервере.
 
 ## Обратная связь:
 [TG](https://t.me/arhefrr)
