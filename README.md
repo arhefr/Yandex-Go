@@ -8,7 +8,7 @@
 ## Установка:
 Установите [Git](https://git-scm.com) если у вас его нет.
 ```
-git clone github.com/arhefr/Yandex-Go
+git clone https://github.com/arhefr/Yandex-Go
 ```
 ## Инструкция:
 ### Конфигурация:
@@ -84,4 +84,4 @@ curl --location 'localhost:8080/api/v1/expressions/<UUID>' \
 - 511 NetworkAuthenticationRequired ```{"message": "error not authorized"}``` отсутсвие или некорректность JWT токена
 
 ## Обратная связь:
-[TG](https://t.me/arhefr)
+[TG](https://t.me/arhefrr)
