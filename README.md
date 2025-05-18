@@ -82,7 +82,7 @@ curl --location 'localhost:8080/api/v1/log-in' \
     "message": "error something went wrong"
 }``` непредвиденная ошибка на сервере.
   
-### **AUTHENTICATION POST localhost:8080/api/v1/calculate**
+### **AUTH POST localhost:8080/api/v1/calculate**
 Отправляет на сервер запрос с математическим выражением, возвращает UUID запроса.
 ``` curl
 curl --location 'localhost:8080/api/v1/calculate' \
@@ -117,7 +117,7 @@ curl --location 'localhost:8080/api/v1/calculate' \
     "message": "error something went wrong"
 }``` непредвиденная ошибка на сервере.
   
-### **AUTHENTICATION GET localhost:8080/api/v1/expressions**
+### **AUTH GET localhost:8080/api/v1/expressions**
 ``` curl
 curl --location 'localhost:8080/api/v1/expressions' \
 --header 'Authorization: Bearer <JWT>'
@@ -143,7 +143,7 @@ curl --location 'localhost:8080/api/v1/expressions' \
 }``` непредвиденная ошибка на сервере.
 
   
-### **AUTHENTICATION GET localhost:8080/api/v1/expressions/UUID** 
+### **AUTH GET localhost:8080/api/v1/expressions/UUID** 
 ``` curl
 curl --location 'localhost:8080/api/v1/expressions/<UUID>' \
 --header 'Authorization: Bearer <JWT>'
