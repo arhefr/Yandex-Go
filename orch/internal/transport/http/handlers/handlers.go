@@ -12,7 +12,7 @@ import (
 
 func (h *Handler) SignIn(ctx echo.Context) (err error) {
 	user := model.NewUser()
-	if err := ctx.Bind(&user); err != nil {
+	if err := ctx.Bind(&user); err != nil || user.Login == "" {
 		return SendJSON(ctx, ResponseWrongJSON)
 	}
 
@@ -35,7 +35,7 @@ func (h *Handler) SignIn(ctx echo.Context) (err error) {
 
 func (h *Handler) LogIn(ctx echo.Context) (err error) {
 	user := new(model.User)
-	if err := ctx.Bind(&user); err != nil {
+	if err := ctx.Bind(&user); err != nil || user.Login == "" {
 		return SendJSON(ctx, ResponseWrongJSON)
 	}
 

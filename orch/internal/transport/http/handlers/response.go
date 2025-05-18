@@ -25,7 +25,7 @@ var (
 	ResponseWrongJSON     = NewResponse(http.StatusUnprocessableEntity, "error wrong JSON")
 	ResponseInternalError = NewResponse(http.StatusInternalServerError, "error something went wrong")
 
-	ResponseRequiredAuth = NewResponse(http.StatusNetworkAuthenticationRequired, "error authentication")
+	ResponseRequiredAuth = NewResponse(http.StatusUnauthorized, "error authentication")
 	ResponseWrongJWT     = NewResponse(http.StatusUnprocessableEntity, "error wrong JWT token")
 	ResponseBadAuth      = NewResponse(http.StatusUnprocessableEntity, "error password must contain 8 characters or more and login must contain 3 characters or more")
 	ResponseLoginExists  = NewResponse(http.StatusUnprocessableEntity, "error login already exists")
