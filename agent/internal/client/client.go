@@ -22,7 +22,7 @@ func RunWorkers(cfg *config.Config) {
 		go func(url string) {
 			Worker(cfg.AgentPeriodicity, url)
 			cfg.WG.Done()
-		}(fmt.Sprintf("http://orch:%s%s", cfg.Port, "/internal/task"))
+		}(fmt.Sprintf("http://%s:%s%s", cfg.Host, cfg.Port, "/internal/task"))
 	}
 
 	log.Infof("%d Workers start working", runtime.NumGoroutine()-1)

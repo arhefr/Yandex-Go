@@ -15,6 +15,9 @@ func MakeTask(task *model.Task) string {
 	case "*":
 		res = n1 * n2
 	case "/":
+		if n2 == 0 {
+			return ""
+		}
 		res = n1 / n2
 	case "+":
 		res = n1 + n2

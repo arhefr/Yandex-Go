@@ -10,6 +10,7 @@ import (
 )
 
 type Config struct {
+	Host string
 	Port string
 
 	AgentsValue      int
@@ -19,7 +20,7 @@ type Config struct {
 }
 
 func NewServiceCfg() *Config {
-
+	host := os.Getenv("HOST")
 	port := os.Getenv("PORT")
 	agentsValue, err := strconv.Atoi(os.Getenv("COMPUTING_POWER"))
 	if err != nil {
@@ -32,6 +33,7 @@ func NewServiceCfg() *Config {
 
 	return &Config{
 		Port: port,
+		Host: host,
 
 		AgentsValue:      agentsValue,
 		AgentPeriodicity: agentPeriodicity,

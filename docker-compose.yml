@@ -50,6 +50,7 @@ services:
       - COMPUTING_POWER=${COMPUTING_POWER:-5}
       - AGENT_PERIODICITY_MS=${AGENT_PERIODICITY_MS:-100}
       - PORT=${PORT:-8080}
+      - HOST=orch
 
     depends_on:
      - orch
