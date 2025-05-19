@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"slices"
 
-	Err "github.com/arhefr/Yandex-Go/orch/internal/errors"
 	"github.com/arhefr/Yandex-Go/orch/internal/model"
 	"github.com/labstack/echo/v4"
 )
@@ -137,7 +136,7 @@ func (h *Handler) CatchTask(ctx echo.Context) error {
 	defer h.mu.RUnlock()
 
 	if err := ctx.Bind(&task); err != nil {
-		return echo.NewHTTPError(http.StatusUnprocessableEntity, Err.IncorrectJSON)
+		return nil
 	}
 
 	req, _ := h.services.GetReqByID(task.ID)
