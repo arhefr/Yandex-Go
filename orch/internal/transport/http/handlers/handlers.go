@@ -160,28 +160,34 @@ func (h *Handler) SendTask(ctx echo.Context) error {
 
 	h.mu.Lock()
 	defer h.mu.Unlock()
+
 	for _, req := range h.services.GetReq() {
-		if task, err := req.GetTask(); err != nil && err != Err.NotFoundTask {
+		if task, exists, err := req.GetTask(); err != nil {
 
-			h.services.ReplaceExpr(context.TODO(), req.ID, model.ExprStatusDone, "")
+			h.services.ReplaceExpr(context.TODO(), req.ID, model.ExprStatusErr, "")
 			h.services.DeleteReq(req.ID)
-			return echo.NewHTTPError(http.StatusInternalServerError, Err.IncorrectExpr)
+			return echo.NewHTTPError(ResponseInternalError.StatusCode)
+
+		} else if !exists {
+			continue
+
 		} else if req.Status == model.ExprStatusDone {
-
 			h.services.DeleteReq(req.ID)
+
 		} else if req.Status == model.ExprStatusWait {
 
 			i, err := model.GetIndex(req.PostNote, task.Sub_ID)
 			if err != nil {
-				return echo.NewHTTPError(http.StatusInternalServerError, Err.IncorrectExpr)
+				return echo.NewHTTPError(ResponseInternalError.StatusCode)
 			}
 
 			req.PostNote = append(req.PostNote[:i-2], req.PostNote[i:]...)
 			h.services.ReplaceReq(req.ID, req)
 
 			return ctx.JSON(http.StatusOK, task)
+
 		}
 	}
 
-	return echo.NewHTTPError(http.StatusNotFound, Err.NotFoundTask)
+	return echo.NewHTTPError(http.StatusNotFound)
 }
