@@ -49,7 +49,7 @@ curl --location 'localhost:8080/api/v1/register' \
 }``` непредвиденная ошибка на сервере.
   
 ### **POST localhost:8080/api/v1/log-in**
-Вход в пользователя, возвращает JWT токен.
+Вход в пользователя, возвращает JWT токен. Загружает в cookie JWT токен. 
 ``` curl
 curl --location 'localhost:8080/api/v1/log-in' \
 --header 'Content-Type: application/json' \
@@ -87,9 +87,9 @@ curl --location 'localhost:8080/api/v1/log-in' \
 ``` curl
 curl --location 'localhost:8080/api/v1/calculate' \
 --header 'Content-Type: application/json' \
---header 'Authorization: Bearer <JWT>' \
+--header 'Cookie: Auth=<JWT TOKEN>' \
 --data '{
-    "expression": "<EXPRESSION>"
+    "expression": "(2*2)*2"
 }'
 ```
 
@@ -109,7 +109,7 @@ curl --location 'localhost:8080/api/v1/calculate' \
 
 - 200 StatusUnprocessableEntity ```{
     "status": 422,
-    "message": "error wrong JWT token"
+    "message": "error expired or wrong jwt token"
 }``` некорректный JWT.
 
 - 200 InternalServerError ```{
@@ -120,7 +120,7 @@ curl --location 'localhost:8080/api/v1/calculate' \
 ### **AUTH GET localhost:8080/api/v1/expressions**
 ``` curl
 curl --location 'localhost:8080/api/v1/expressions' \
---header 'Authorization: Bearer <JWT>'
+--header 'Cookie: Auth=<JWT TOKEN>'
 ```
 
 - 200 OK ```{
@@ -129,7 +129,7 @@ curl --location 'localhost:8080/api/v1/expressions' \
 
 - 200 Unauthorized ```{
     "status": 401,
-    "message": "error authentication"
+    "message": "error expired or wrong jwt token"
 }``` требуется авторизация.
 
 - 200 StatusUnprocessableEntity ```{
@@ -143,10 +143,10 @@ curl --location 'localhost:8080/api/v1/expressions' \
 }``` непредвиденная ошибка на сервере.
 
   
-### **AUTH GET localhost:8080/api/v1/expressions/UUID** 
+### **AUTH GET localhost:8080/api/v1/expressions/<UUID>** 
 ``` curl
 curl --location 'localhost:8080/api/v1/expressions/<UUID>' \
---header 'Authorization: Bearer <JWT>'
+--header 'Cookie: Auth=<JWT TOKEN>'
 ```
 
 - 200 OK ```{
@@ -155,7 +155,7 @@ curl --location 'localhost:8080/api/v1/expressions/<UUID>' \
 
 - 200 Unauthorized ```{
     "status": 401,
-    "message": "error authentication"
+    "message": "error expired or wrong jwt token"
 }``` требуется авторизация.
 
 - 200 StatusUnprocessableEntity ```{
