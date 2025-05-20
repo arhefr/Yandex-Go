@@ -13,7 +13,7 @@ func (h *Handler) AuthRequired(next echo.HandlerFunc) echo.HandlerFunc {
 
 		claims, err := h.services.ParseJWT(cookie.Value)
 		if err != nil {
-			return SendJSON(ctx, ResponseWrongJWT)
+			return SendJSON(ctx, ResponseJWTExpired)
 		}
 
 		if claims["uuid"].(string) == "" {
