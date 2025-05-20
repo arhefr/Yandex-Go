@@ -23,7 +23,7 @@ func NewManager(key string) *Manager {
 func (m *Manager) NewJWT(uuid string, exp time.Duration) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"uuid": uuid,
-		"exp":  exp,
+		"exp":  float64(time.Now().Add(exp).Unix()),
 	})
 	return token.SignedString([]byte(m.key))
 }

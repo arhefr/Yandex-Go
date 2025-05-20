@@ -49,7 +49,7 @@ func (su *ServiceUsers) GetUserID(ctx context.Context, user *model.User) (string
 }
 
 func (su *ServiceUsers) GetJWT(uuid string) (string, error) {
-	return su.tm.NewJWT(uuid, time.Minute*3)
+	return su.tm.NewJWT(uuid, time.Minute*2)
 }
 
 func (su *ServiceUsers) ParseJWT(jwt string) (claims jwt.MapClaims, err error) {
