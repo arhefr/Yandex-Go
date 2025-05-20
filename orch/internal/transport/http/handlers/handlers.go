@@ -54,22 +54,15 @@ func (h *Handler) LogIn(ctx echo.Context) (err error) {
 		return SendJSON(ctx, ResponseInternalError)
 	}
 
+	ctx.SetCookie(&http.Cookie{Name: "Auth", Value: token, Quoted: false, HttpOnly: true})
 	return SendJSON(ctx, struct {
 		Token string `json:"token"`
 	}{token})
 }
 
 func (h *Handler) AddExpr(ctx echo.Context) (err error) {
-	auth := ctx.Request().Header.Get("Authorization")
-	if len(auth) < len("Bearer ") {
-		return SendJSON(ctx, ResponseRequiredAuth)
-	}
-	user, err := h.services.ParseJWT(auth[len("Bearer "):])
-	if err != nil {
-		return SendJSON(ctx, ResponseWrongJWT)
-	}
 
-	expr := model.NewExpression(user.ID)
+	expr := model.NewExpression(ctx.Get("userUUID").(string))
 	if err := ctx.Bind(&expr); err != nil {
 		return SendJSON(ctx, ResponseWrongJSON)
 	}
@@ -90,16 +83,8 @@ func (h *Handler) AddExpr(ctx echo.Context) (err error) {
 }
 
 func (h *Handler) GetIDs(ctx echo.Context) (err error) {
-	auth := ctx.Request().Header.Get("Authorization")
-	if len(auth) < len("Bearer ") {
-		return SendJSON(ctx, ResponseRequiredAuth)
-	}
-	user, err := h.services.ParseJWT(auth[len("Bearer "):])
-	if err != nil {
-		return SendJSON(ctx, ResponseWrongJWT)
-	}
 
-	exprs, err := h.services.GetExprs(context.TODO(), user.ID)
+	exprs, err := h.services.GetExprs(context.TODO(), ctx.Get("userUUID").(string))
 	if err != nil {
 		return SendJSON(ctx, ResponseInternalError)
 	}
@@ -110,16 +95,8 @@ func (h *Handler) GetIDs(ctx echo.Context) (err error) {
 }
 
 func (h *Handler) GetID(ctx echo.Context) (err error) {
-	auth := ctx.Request().Header.Get("Authorization")
-	if len(auth) < len("Bearer ") {
-		return SendJSON(ctx, ResponseRequiredAuth)
-	}
-	user, err := h.services.ParseJWT(auth[len("Bearer "):])
-	if err != nil {
-		return SendJSON(ctx, ResponseWrongJWT)
-	}
 
-	expr, err := h.services.GetExprByID(context.TODO(), user.ID, ctx.Param("id"))
+	expr, err := h.services.GetExprByID(context.TODO(), ctx.Get("userUUID").(string), ctx.Param("id"))
 	if err != nil {
 		return SendJSON(ctx, ResponseWrongID)
 	}

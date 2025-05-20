@@ -32,6 +32,7 @@ var (
 
 	ResponseWrongLogin    = NewResponse(http.StatusUnprocessableEntity, "error login not exists")
 	ResponseWrongPassword = NewResponse(http.StatusUnprocessableEntity, "error wrong password")
+	ResponseWrongID       = NewResponse(http.StatusUnprocessableEntity, "error wrong uuid")
 
-	ResponseWrongID = NewResponse(http.StatusUnprocessableEntity, "error wrong uuid")
+	ResponseTokenExpired = NewResponse(http.StatusUnauthorized, "error token expired")
 )

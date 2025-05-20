@@ -2,15 +2,17 @@ package services
 
 import (
 	"context"
+	"time"
 
 	"github.com/arhefr/Yandex-Go/orch/internal/model"
 	"github.com/arhefr/Yandex-Go/orch/pkg/client/hash"
-	"github.com/arhefr/Yandex-Go/orch/pkg/client/jwt"
+	myjwt "github.com/arhefr/Yandex-Go/orch/pkg/client/jwt"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type ServiceUsers struct {
 	db RepositoryUsers
-	tm *jwt.Manager
+	tm *myjwt.Manager
 	ph *hash.Hasher
 }
 
@@ -20,7 +22,7 @@ type RepositoryUsers interface {
 	Exists(ctx context.Context, user *model.User) (bool, error)
 }
 
-func NewServiceUsers(db RepositoryUsers, tm *jwt.Manager, ph *hash.Hasher) *ServiceUsers {
+func NewServiceUsers(db RepositoryUsers, tm *myjwt.Manager, ph *hash.Hasher) *ServiceUsers {
 	return &ServiceUsers{db: db, tm: tm, ph: ph}
 }
 
@@ -47,14 +49,9 @@ func (su *ServiceUsers) GetUserID(ctx context.Context, user *model.User) (string
 }
 
 func (su *ServiceUsers) GetJWT(uuid string) (string, error) {
-	return su.tm.NewJWT(uuid)
+	return su.tm.NewJWT(uuid, time.Minute*3)
 }
 
-func (su *ServiceUsers) ParseJWT(jwt string) (user *model.User, err error) {
-	claims, err := su.tm.Parse(jwt)
-	if err != nil {
-		return nil, err
-	}
-
-	return &model.User{ID: claims["uuid"].(string)}, nil
+func (su *ServiceUsers) ParseJWT(jwt string) (claims jwt.MapClaims, err error) {
+	return su.tm.ParseJWT(jwt)
 }

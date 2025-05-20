@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -19,14 +20,15 @@ func NewManager(key string) *Manager {
 	return &Manager{key: key}
 }
 
-func (m *Manager) NewJWT(uuid string) (string, error) {
+func (m *Manager) NewJWT(uuid string, exp time.Duration) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"uuid": uuid,
+		"exp":  exp,
 	})
 	return token.SignedString([]byte(m.key))
 }
 
-func (m *Manager) Parse(accToken string) (jwt.MapClaims, error) {
+func (m *Manager) ParseJWT(accToken string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(accToken, func(token *jwt.Token) (i interface{}, err error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("jwt: Parse: error unexpected signing method")
