@@ -34,5 +34,5 @@ var (
 	ResponseWrongPassword = NewResponse(http.StatusUnprocessableEntity, "error wrong password")
 	ResponseWrongID       = NewResponse(http.StatusUnprocessableEntity, "error wrong uuid")
 
-	ResponseJWTExpired = NewResponse(http.StatusUnauthorized, "error token expired")
+	ResponseJWTExpired = NewResponse(http.StatusUnauthorized, "error expired or wrong jwt token")
 )
