@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 
+	. "github.com/arhefr/Yandex-Go/orch/internal/transport/http/endpoints"
 	"github.com/arhefr/Yandex-Go/orch/internal/transport/http/handlers"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
@@ -20,13 +21,13 @@ type Router struct {
 func NewRouter(config *Config, h *handlers.Handler) Router {
 
 	e := echo.New()
-	reqAuth := e.Group("/api/v1", h.AuthRequired)
+	reqAuth := e.Group(ENDPOINT_API, h.AuthRequired)
 	{
 		reqAuth.POST(ENDPOINT_ADD, h.AddExpr)
 		reqAuth.GET(ENDPOINT_GET, h.GetIDs)
 		reqAuth.GET(ENDPOINT_GET+"/:id", h.GetID)
 	}
-	auth := e.Group("/api/v1")
+	auth := e.Group(ENDPOINT_API)
 	{
 		auth.POST(ENDPOINT_SIGN_IN, h.SignIn)
 		auth.POST(ENDPOINT_LOG_IN, h.LogIn)

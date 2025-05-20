@@ -1,6 +1,7 @@
-package router
+package endpoints
 
 const (
+	ENDPOINT_API     = "/api/v1"
 	ENDPOINT_ADD     = "/calculate"
 	ENDPOINT_GET     = "/expressions"
 	ENDPOINT_TASK    = "/internal/task"
