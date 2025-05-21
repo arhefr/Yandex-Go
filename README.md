@@ -132,11 +132,6 @@ curl --location 'localhost:8080/api/v1/expressions' \
     "message": "error expired or wrong jwt token"
 }``` требуется авторизация.
 
-- 200 StatusUnprocessableEntity ```{
-    "status": 422,
-    "message": "error wrong JSON"
-}``` некорректный JSON.
-
 - 200 InternalServerError ```{
     "status": 500,
     "message": "error something went wrong"
@@ -157,11 +152,6 @@ curl --location 'localhost:8080/api/v1/expressions/<UUID>' \
     "status": 401,
     "message": "error expired or wrong jwt token"
 }``` требуется авторизация.
-
-- 200 StatusUnprocessableEntity ```{
-    "status": 422,
-    "message": "error wrong JSON"
-}``` некорректный JSON.
 
 - 200 StatusUnprocessableEntity ```{
     "status": 422,
