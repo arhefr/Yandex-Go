@@ -163,5 +163,11 @@ curl --location 'localhost:8080/api/v1/expressions/<UUID>' \
     "message": "error something went wrong"
 }``` непредвиденная ошибка на сервере.
 
+## Тесты:
+- Интеграционные:
+  Установите [Postman](https://www.postman.com/downloads/), если у вас его нет. Импортируйте [коллекцию](postman/collection.json) в Postman.
+- Модульные:
+  
+
 ## Обратная связь:
 [TG](https://t.me/arhefrr)
